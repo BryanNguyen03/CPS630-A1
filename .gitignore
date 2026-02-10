@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+.env
+server/.env
+client/.env.local
+
+# Build outputs
+client/dist/
+client/build/
+
+# OS-specific files
+.DS_Store
+thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-error.log*
