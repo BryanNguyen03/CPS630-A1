@@ -8,10 +8,17 @@ const PORT = 8080;
 app.use(cors());
 app.use(express.json());
 
+
+//simple list of reviews to demo the idea
+//Eventually this list will be dynamic and stored separately
+//Several more fields will also be present
 let item_list = [
-    {id: 1, name:"apple"},
-    {id: 2, name: "banana"},
-    {id: 3, name: "orange"}
+    {id: 1, name:"Review for Fifa 25: 4/5 | Enjoyed playing proclubs, however didn't like the fifa points"},
+    {id: 2, name: "Review for Valorant: 4/5 | Always rage, always come back"},
+    {id: 3, name: "Review for Call of Duty: 2/5 | Same game as last year"},
+    {id: 4, name:"Review for Minecraft: 5/5 | Can't go wrong with Minecraft"},
+    {id: 5, name: "Review for Fortnite: 1/5 | Too many sweats"},
+    {id: 6, name: "Review for League of Legends: 5/5 | Spent too much lifespan"}
 ]
 
 app.get('/api/items', (req, res) => {

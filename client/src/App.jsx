@@ -70,13 +70,13 @@ function App() {
           className={currentPage === 'page1' ? 'active' : ''} 
           onClick={() => setCurrentPage('page1')}
         >
-          Item Manager
+          Review Manager
         </button>
         <button 
           className={currentPage === 'page2' ? 'active' : ''} 
           onClick={() => setCurrentPage('page2')}
         >
-          Item Search
+          Review Search
         </button>
         <button 
           className={currentPage === 'page3' ? 'active' : ''} 
@@ -88,22 +88,22 @@ function App() {
 
       {currentPage === 'page1' && (
         <div className="page">
-          <h2>Item Manager</h2>
-          <p>Manage your items with GET, POST, and DELETE requests</p>
+          <h2>Manage Reviews</h2>
+          <p>Manage reviews with GET, POST, and DELETE requests</p>
 
           <div className="input-section">
             <input 
               type="text" 
               value={newItemName} 
               onChange={(e) => setNewItemName(e.target.value)} 
-              placeholder="Enter item name"
+              placeholder="Enter review"
               onKeyPress={(e) => e.key === 'Enter' && addItem()}
             />
-            <button onClick={addItem}>Add Item (POST)</button>
+            <button onClick={addItem}>Add Review (POST)</button>
           </div>
 
           <div className="items-container">
-            <h3>Current Items ({itemList.length})</h3>
+            <h3>Reviews ({itemList.length})</h3>
             {itemList.length === 0 ? (
               <p className="no-items">No items yet. Add one above!</p>
             ) : (
@@ -122,15 +122,15 @@ function App() {
 
       {currentPage === 'page2' && (
         <div className="page">
-          <h2>Item Search</h2>
-          <p>Search for items using the GET request</p>
+          <h2>Review Search</h2>
+          <p>Search for reviews using the GET request</p>
 
           <div className="input-section">
             <input 
-              type="text" 
-              value={searchTerm} 
+              type="text"
+              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)} 
-              placeholder="Search for an item..."
+              placeholder="Search for a review..."
             />
             <button onClick={() => fetchItems()}>Search (GET)</button>
           </div>
@@ -143,7 +143,7 @@ function App() {
               item.name.toLowerCase().includes(searchTerm.toLowerCase())
             ).length === 0 ? (
               <p className="no-items">
-                {searchTerm ? 'No items found matching your search.' : 'Enter a search term to find items.'}
+                {searchTerm ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
               </p>
             ) : (
               <ul>
