@@ -86,6 +86,7 @@ The client will run on **http://localhost:5173**
 
 ### Review Search page
 - Allows the user to look up any reviews (GET) containing the search criteria
+- Button will also initiate search (GET)
 - Search will activate on keypress
 
 ### About page
