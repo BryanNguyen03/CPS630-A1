@@ -25,6 +25,7 @@ function App() {
       return;
     }
 
+    // POST for creating items
     try {
       const response = await fetch('http://localhost:8080/api/items', {
         method: 'POST',
@@ -62,6 +63,8 @@ function App() {
   }, []);
 
   return (
+
+    // Navigation bar code, which selects the displayed HTML for the specific page selected
     <div>
       <h1>CPS630 - Group 52 - Assignment 1</h1>
 
@@ -86,11 +89,13 @@ function App() {
         </button>
       </div>
 
+      {/* First HTML route for the Manage Reviews, which has GET POST and DELETE requests */}
       {currentPage === 'page1' && (
         <div className="page">
           <h2>Manage Reviews</h2>
           <p>Manage reviews with GET, POST, and DELETE requests</p>
 
+          {/* User input element where the user can input their review and submit it using a button */}
           <div className="input-section">
             <input 
               type="text" 
@@ -102,6 +107,7 @@ function App() {
             <button onClick={addItem}>Add Review (POST)</button>
           </div>
 
+          {/* Displaying the list of reviews in the JSON object */}
           <div className="items-container">
             <h3>Reviews ({itemList.length})</h3>
             {itemList.length === 0 ? (
@@ -120,12 +126,14 @@ function App() {
         </div>
       )}
 
+      {/* Second HTML route for the Review Search, GET requests */}
       {currentPage === 'page2' && (
         <div className="page">
           <h2>Review Search</h2>
           <p>Search for reviews using the GET request</p>
 
           <div className="input-section">
+            {/* On-change search feature */}
             <input 
               type="text"
               value={searchTerm}
@@ -135,6 +143,7 @@ function App() {
             <button onClick={() => fetchItems()}>Search (GET)</button>
           </div>
 
+          {/* Search div */}
           <div className="items-container">
             <h3>Search Results ({itemList.filter(item => 
               item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -161,8 +170,10 @@ function App() {
         </div>
       )}
 
+      {/* Third HTML route, for the about page */}
       {currentPage === 'page3' && (
         <div className="page">
+          {/* Several HTML objects formatted to show various information about the site */}
           <h2>About This Application</h2>
           
           <section>
