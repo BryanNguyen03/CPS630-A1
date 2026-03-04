@@ -4,8 +4,17 @@ import './App.css'
 function App() {
   const [currentPage, setCurrentPage] = useState('page1');
   const [itemList, setItemList] = useState([]);
-  const [newItemName, setNewItemName] = useState('');
+  //const [newItemName, setNewItemName] = useState('');
+
+  const [newReviewGameName, setNewReviewGameName] = useState('');
+  const [newReviewRating, setNewReviewRating] = useState('');
+  const [newReviewText, setNewReviewText] = useState('');
+
   const [searchTerm, setSearchTerm] = useState('');
+  // For the update item feature, we need to track the ID of the item being updated and the new review text
+  const [updatedReviewGameName, setUpdatedReviewGameName] = useState('');
+  const [updatedReview, setUpdatedReview] = useState('');
+  const [updatedRating, setUpdatedRating] = useState('');
 
   const fetchItems = async () => {
     try {
@@ -20,8 +29,8 @@ function App() {
   };
 
   const addItem = async () => {
-    if (!newItemName.trim()) {
-      alert('Please enter an item name');
+    if (!newReviewGameName.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
+      alert('Please enter all review fields');
       return;
     }
 
@@ -32,10 +41,12 @@ function App() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name: newItemName })
+        body: JSON.stringify({ gameName: newReviewGameName, review: newReviewText, rating: newReviewRating })
       });
       if (response.ok) {
-        setNewItemName('');
+        setNewReviewGameName('');
+        setNewReviewText('');
+        setNewReviewRating('');
         fetchItems();
       }
     } catch (error) {
@@ -55,6 +66,44 @@ function App() {
       }
     } catch (error) {
       console.error('Error deleting item:', error);
+    }
+  }
+
+  const updateItem = async (gameName) => {
+    try {
+      if (!updatedReview.trim() || !updatedRating.trim() || !updatedReviewGameName.trim()) {
+        alert('Please enter the updated review text, rating, and game name');
+        return;
+      }
+
+      if (isNaN(updatedRating) || updatedRating < 1 || updatedRating > 5) {
+        alert('Rating must be a number between 1 and 5');
+        return;
+      }
+      
+      const response = await fetch(`http://localhost:8080/api/items/${gameName}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ review: updatedReview, rating: updatedRating })
+      });
+
+      if (response.ok) {
+        console.log('Item updated successfully');
+        // reset input fields and refresh item list
+        setUpdatedReview('');
+        setUpdatedRating('');
+        setUpdatedReviewGameName('');
+        fetchItems();
+      }
+      else {
+        console.error('Error updating item');
+        alert('Failed to update review. Please ensure the game name exists and try again.');
+      }
+    }
+    catch (error) {
+      console.error('Error updating item:', error);
     }
   }
 
@@ -99,10 +148,21 @@ function App() {
           <div className="input-section">
             <input 
               type="text" 
-              value={newItemName} 
-              onChange={(e) => setNewItemName(e.target.value)} 
-              placeholder="Enter review"
-              onKeyPress={(e) => e.key === 'Enter' && addItem()}
+              value={newReviewGameName} 
+              onChange={(e) => setNewReviewGameName(e.target.value)} 
+              placeholder="Enter game name"
+            />
+            <input 
+              type="text" 
+              value={newReviewText} 
+              onChange={(e) => setNewReviewText(e.target.value)} 
+              placeholder="Enter review text"
+            />
+            <input 
+              type="number" 
+              value={newReviewRating} 
+              onChange={(e) => setNewReviewRating(e.target.value)} 
+              placeholder="Enter rating (1-5)"
             />
             <button onClick={addItem}>Add Review (POST)</button>
           </div>
@@ -115,13 +175,19 @@ function App() {
             ) : (
               <ul>
                 {itemList.map(item => (
-                  <li key={item.id}>
-                    <span>{item.name}</span>
-                    <button onClick={() => deleteItem(item.id)}>Delete (DELETE)</button>
+                  <li key={item._id}>
+                    <span>{item.gameName} | {item.review} | Rating: {item.rating}/5</span>
+                    <button onClick={() => deleteItem(item._id)}>Delete (DELETE)</button>
                   </li>
                 ))}
               </ul>
             )}
+            <div className="input-section">
+              <input type="text" placeholder="Game to update" value={updatedReviewGameName} onChange={(e) => setUpdatedReviewGameName(e.target.value)} />
+              <input type="text" placeholder="Updated review" value={updatedReview} onChange={(e) => setUpdatedReview(e.target.value)} />
+              <input type="number" placeholder="Updated Rating" value={updatedRating} onChange={(e) => setUpdatedRating(e.target.value)} />
+              <button onClick={() => updateItem(updatedReviewGameName)}>Update Review (PUT)</button>
+            </div>
           </div>
         </div>
       )}
@@ -146,10 +212,10 @@ function App() {
           {/* Search div */}
           <div className="items-container">
             <h3>Search Results ({itemList.filter(item => 
-              item.name.toLowerCase().includes(searchTerm.toLowerCase())
+              item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
             ).length})</h3>
             {itemList.filter(item => 
-              item.name.toLowerCase().includes(searchTerm.toLowerCase())
+              item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
             ).length === 0 ? (
               <p className="no-items">
                 {searchTerm ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
@@ -157,11 +223,11 @@ function App() {
             ) : (
               <ul>
                 {itemList
-                  .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                  .filter(item => item.gameName.toLowerCase().includes(searchTerm.toLowerCase()))
                   .map(item => (
-                    <li key={item.id}>
-                      <span>{item.name}</span>
-                      <span className="item-id">ID: {item.id}</span>
+                    <li key={item._id}>
+                      <span>{item.gameName} | {item.review} | Rating: {item.rating}/5</span>
+                      <span className="item-id">ID: {item._id}</span>
                     </li>
                   ))}
               </ul>

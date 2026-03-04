@@ -2,62 +2,134 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const path = require('path');
+const Review = require('./models/Review');
 
 const PORT = 8080;
 
 app.use(cors());
 app.use(express.json());
 
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const host = process.env.DB_HOST
+const port = process.env.DB_PORT
+const name = process.env.DB_NAME
+const { default: mongoose } = require('mongoose');
 
+const dbURL = `mongodb://${host}:${port}/${name}`;
+mongoose.connect(dbURL);
+
+const db = mongoose.connection;
+db.on('error', function(e) {
+    console.log('error connecting');
+});
+db.on('open', function() {
+    console.log('database connected');
+});
+
+// Create reviews if they don't already exist in the database
 //simple list of reviews to demo the idea
-//Eventually this list will be dynamic and stored separately
-//Several more fields will also be present
-let item_list = [
-    {id: 1, name:"Review for Fifa 25: 4/5 | Enjoyed playing proclubs, however didn't like the fifa points"},
-    {id: 2, name: "Review for Valorant: 4/5 | Always rage, always come back"},
-    {id: 3, name: "Review for Call of Duty: 2/5 | Same game as last year"},
-    {id: 4, name:"Review for Minecraft: 5/5 | Can't go wrong with Minecraft"},
-    {id: 5, name: "Review for Fortnite: 1/5 | Too many sweats"},
-    {id: 6, name: "Review for League of Legends: 5/5 | Spent too much lifespan"}
-]
+let reviews = [
+    { gameName:'League of Legends', review:"Ruined my life",   rating: 5},
+    { gameName:'FIFA 25', review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
+    { gameName:'Valorant', review:"Always rage, always come back", rating: 3},
+    { gameName:'Fortnite', review:"Too many Sweats", rating: 5},
+    { gameName:'Call of Duty', review:"Same game as last year", rating:2},
+    { gameName:'Minecraft', review:"Can't go wrong with Minecraft", rating:5}
+];
 
-app.get('/api/items', (req, res) => {
-    // 200 OK status
-    res.status(200).json(item_list);
-});
+async function addReviewsToMongoDB() {
+    const reviewCount = await Review.countDocuments();
 
-app.post('/api/items', (req, res) => {
-    const {name} = req.body;
+    if (reviewCount === 0) {
+        console.log('Adding test reviews to db ...');
 
-    if (!name) {
-        // 400 Bad Request status
-        return res.status(400).json({ error: "Name is required" });
+        reviews.forEach(review => {
+            const newReview = new Review(review);
+            newReview.save()
+                .then(() => console.log('Review added with id: ' + newReview._id))
+                .catch(err => console.error('Error adding review with id' + newReview._id + ' ' + err));
+        })
+    }
+    else {
+        console.log('Reviews already exist, Not adding test reviews.');
+        return
     }
 
-    const newItem = {
-        id: Date.now(), // temporary unique ID based on timestamp
-        name
+}
+addReviewsToMongoDB();
+
+
+app.get('/api/items', async (req, res) => {
+
+    try {
+        const data = await Review.find();
+        res.status(200).json(data);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.toString() });
     }
-
-    item_list.push(newItem);
-
-    // 201 created status
-    res.status(201).json(newItem);
 });
 
-app.delete('/api/items/:id', (req, res) => {
-    const id = parseInt(req.params.id);
+app.post('/api/items', async (req, res) => {
+    const newReview = req.body;
 
-    const index = item_list.findIndex(item => item.id === id);
+    if (newReview && newReview.gameName && newReview.review && newReview.rating) {
+        const review = new Review(newReview);
 
-    if (index !== -1) {
-        item_list.splice(index, 1); // Find the item by ID and remove it from the list
+        review.save()
+            .then(() => {
+                console.log('Review added with id: ' + review._id);
+                res.status(201).json(review);
+            })
+            .catch(err => {
+                console.error('Error adding review with id' + review._id + ' ' + err);
+                res.status(500).json({ error: 'Failed to add review' });
+            });
+    }
+    else {
+        return res.status(400).json({ error: "Invalid review data" });
+    }
+});
 
-        // 200 OK status
-        res.status(200).json({ message: "Item deleted successfully" });
-    } else { // index === -1, item not found
-        // 404 Not Found status
-        res.status(404).json({ error: "Item not found" });
+
+app.patch('/api/items/:gameName', async (req, res) => {
+
+    try {
+        const { gameName } = req.params;
+        const { review, rating } = req.body;
+
+        if (!review && !rating) {
+            return res.status(400).json({ error: "Review text or rating required" });
+        }
+        const updatedReviewData = await Review.findOneAndUpdate({ gameName: gameName }, { review: review, rating: rating }, { new: true });
+        
+        
+        if (updatedReviewData) {
+            res.status(200).json(updatedReviewData);
+        }
+
+        if (!updatedReviewData) {
+            res.status(404).json({ error: "Review not found" });
+        }
+    }
+    catch (err) {
+        console.error('Error updating review with game name ' + gameName + ' ' + err);
+        res.status(500).json({ error: "Failed to update review" });
+    }
+});
+
+app.delete('/api/items/:id', async (req, res) => {
+    try {
+        const reviewId = req.params.id;
+        const deletedReview = await Review.findOneAndDelete({ _id: reviewId });
+        if (deletedReview) {
+            res.status(200).json({ message: "Review deleted successfully" });
+        } else {
+            res.status(404).json({ error: "Review not found" });
+        }
+    } catch (err) {
+        console.error('Error deleting review with id ' + reviewId + ' ' + err);
+        res.status(500).json({ error: "Failed to delete review" });
     }
 });
 
