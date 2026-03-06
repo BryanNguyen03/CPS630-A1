@@ -1,12 +1,7 @@
 const mongoose = require('mongoose');
 
 const ReviewSchema = new mongoose.Schema({
-    reviewId: {
-        type: Number,
-        unique: true,
-        required: true,
-        min: 0
-    },
+    // using the unique mongo database ID of the user instance for the userID
     userId: {
         type: Number,
         unique: false,

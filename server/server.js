@@ -4,17 +4,26 @@ const app = express();
 const path = require('path');
 const Review = require('./models/Review');
 
+
+//server port
 const PORT = 8080;
 
+
+//setting up CORS and Express
 app.use(cors());
 app.use(express.json());
 
+
+//Setting up environment variables for the database server init
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const host = process.env.DB_HOST
 const port = process.env.DB_PORT
 const name = process.env.DB_NAME
+//creating the mongoose module object
 const { default: mongoose } = require('mongoose');
 
+
+//creating the database connection
 const dbURL = `mongodb://${host}:${port}/${name}`;
 mongoose.connect(dbURL);
 
@@ -26,17 +35,21 @@ db.on('open', function() {
     console.log('database connected');
 });
 
+
 // Create reviews if they don't already exist in the database
 //simple list of reviews to demo the idea
 let reviews = [
-    { reviewId:'1', userId:'5', gameName:'League of Legends', review:"Ruined my life",   rating: 5},
-    { reviewId:'2', userId:'3', gameName:'FIFA 25', review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
-    { reviewId:'3', userId:'2', gameName:'Valorant', review:"Always rage, always come back", rating: 3},
-    { reviewId:'4', userId:'4', gameName:'Fortnite', review:"Too many Sweats", rating: 5},
-    { reviewId:'5', userId:'4', gameName:'Call of Duty', review:"Same game as last year", rating:2},
-    { reviewId:'6', userId:'2', gameName:'Minecraft', review:"Can't go wrong with Minecraft", rating:5}
+    { userId:'5', gameName:'League of Legends', review:"Ruined my life",   rating: 5},
+    { userId:'3', gameName:'FIFA 25', review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
+    { userId:'2', gameName:'Valorant', review:"Always rage, always come back", rating: 3},
+    { userId:'4', gameName:'Fortnite', review:"Too many Sweats", rating: 5},
+    { userId:'4', gameName:'Call of Duty', review:"Same game as last year", rating:2},
+    { userId:'2', gameName:'Minecraft', review:"Can't go wrong with Minecraft", rating:5}
 ];
 
+
+// Test function that adds default reviews to the database if the database is empty
+// This function also creates the database (via the first input) if it isnt already there 
 async function addReviewsToMongoDB() {
     const reviewCount = await Review.countDocuments();
 
@@ -59,6 +72,7 @@ async function addReviewsToMongoDB() {
 addReviewsToMongoDB();
 
 
+//route to get all the reviews from the database (GET), READ multiple items
 app.get('/api/items', async (req, res) => {
 
     try {
@@ -70,6 +84,8 @@ app.get('/api/items', async (req, res) => {
     }
 });
 
+
+//route to add a new user entered review into the database (POST), CREATE an item
 app.post('/api/items', async (req, res) => {
     const newReview = req.body;
 
@@ -78,7 +94,7 @@ app.post('/api/items', async (req, res) => {
 
         review.save()
             .then(() => {
-                console.log('Review added with id: ' + review._id);
+                console.log('Review added with id: ' + review._id);              
                 res.status(201).json(review);
             })
             .catch(err => {
@@ -92,6 +108,7 @@ app.post('/api/items', async (req, res) => {
 });
 
 
+//route to search reviews based on the game name which is determined by user input (GET), READ an item 
 app.patch('/api/items/:gameName', async (req, res) => {
 
     try {
@@ -118,6 +135,8 @@ app.patch('/api/items/:gameName', async (req, res) => {
     }
 });
 
+
+//route to delete a review, which is determeined by the id given in the request (DELETE), DELETE an item
 app.delete('/api/items/:id', async (req, res) => {
     try {
         const reviewId = req.params.id;
@@ -133,5 +152,7 @@ app.delete('/api/items/:id', async (req, res) => {
     }
 });
 
+
 console.log('__dirname: ' + __dirname);
+//starting the express server
 app.listen(PORT, () => { console.log("Server started on port " + PORT); });
