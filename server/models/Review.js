@@ -1,6 +1,18 @@
 const mongoose = require('mongoose');
 
 const ReviewSchema = new mongoose.Schema({
+    reviewId: {
+        type: Number,
+        unique: true,
+        required: true,
+        min: 0
+    },
+    userId: {
+        type: Number,
+        unique: false,
+        required: true,
+        min: 0
+    },
     gameName: {
         type: String,
         unique: true,

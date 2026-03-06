@@ -29,12 +29,12 @@ db.on('open', function() {
 // Create reviews if they don't already exist in the database
 //simple list of reviews to demo the idea
 let reviews = [
-    { gameName:'League of Legends', review:"Ruined my life",   rating: 5},
-    { gameName:'FIFA 25', review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
-    { gameName:'Valorant', review:"Always rage, always come back", rating: 3},
-    { gameName:'Fortnite', review:"Too many Sweats", rating: 5},
-    { gameName:'Call of Duty', review:"Same game as last year", rating:2},
-    { gameName:'Minecraft', review:"Can't go wrong with Minecraft", rating:5}
+    { reviewId:'1', userId:'5', gameName:'League of Legends', review:"Ruined my life",   rating: 5},
+    { reviewId:'2', userId:'3', gameName:'FIFA 25', review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
+    { reviewId:'3', userId:'2', gameName:'Valorant', review:"Always rage, always come back", rating: 3},
+    { reviewId:'4', userId:'4', gameName:'Fortnite', review:"Too many Sweats", rating: 5},
+    { reviewId:'5', userId:'4', gameName:'Call of Duty', review:"Same game as last year", rating:2},
+    { reviewId:'6', userId:'2', gameName:'Minecraft', review:"Can't go wrong with Minecraft", rating:5}
 ];
 
 async function addReviewsToMongoDB() {
