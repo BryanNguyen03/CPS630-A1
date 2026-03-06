@@ -108,7 +108,7 @@ app.post('/api/items', async (req, res) => {
 });
 
 
-//route to search reviews based on the game name which is determined by user input (GET), READ an item 
+//route to update reviews based on the game name, user input also determines the updates (UPDATE), UPDATE an item 
 app.patch('/api/items/:gameName', async (req, res) => {
 
     try {
