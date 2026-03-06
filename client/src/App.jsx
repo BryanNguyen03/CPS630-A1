@@ -11,6 +11,10 @@ function App() {
   const [newReviewText, setNewReviewText] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
+
+  //usestate variable for the search review by reviewId
+  const [searchTermId, setSearchTermId] = useState('');
+
   // For the update item feature, we need to track the ID of the item being updated and the new review text
   const [updatedReviewGameName, setUpdatedReviewGameName] = useState('');
   const [updatedReview, setUpdatedReview] = useState('');
@@ -192,7 +196,7 @@ function App() {
         </div>
       )}
 
-      {/* Second HTML route for the Review Search, GET requests */}
+      {/* Second HTML route for the Review Search by game and by Id, GET requests */}
       {currentPage === 'page2' && (
         <div className="page">
           <h2>Review Search</h2>
@@ -234,6 +238,9 @@ function App() {
             )}
           </div>
         </div>
+
+        //search by ID to be added here--------------------
+        
       )}
 
       {/* Third HTML route, for the about page */}

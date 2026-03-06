@@ -85,6 +85,38 @@ app.get('/api/items', async (req, res) => {
 });
 
 
+//route to search reviews based on the review ID that the user inputted (READ), READ an item
+app.get('/api/items/:reviewId', async (req, res) => {
+
+    try {
+        //getting the input parameter of reviewId
+        const { reviewId } = req.params;     
+
+        //checking if input is present
+        if (!reviewId) {
+            return res.status(400).json({ error: "Review ID input is required" });
+        }
+
+        
+        //checking if the reviewId input matches any instance in the database, then returning if found
+        const reviewReturn = await Review.findOne({reviewId: reviewId});
+        if (reviewReturn){
+            return res.status(200).json([reviewReturn]);  //list encapsulation due to frontend map function
+        }
+        //if nothing is found then return empty list
+        else{
+            return res.status(200).json([]);
+        }          
+        
+        // const updatedReviewData = await Review.findOneAndUpdate({ gameName: gameName }, { review: review, rating: rating }, { new: true });
+    }
+    catch (err) {
+        console.error('Error trying to search database for review with the following reviewId: ' + reviewId + ' ' + err);
+        res.status(500).json({ error: "Failed to search review by ID" });
+    }
+});
+
+
 //route to add a new user entered review into the database (POST), CREATE an item
 app.post('/api/items', async (req, res) => {
     const newReview = req.body;
