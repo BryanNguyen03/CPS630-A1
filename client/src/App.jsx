@@ -15,6 +15,8 @@ function App() {
 
   //usestate variable for the search review by reviewId
   const [searchTermId, setSearchTermId] = useState('');
+  //usestate variable to check if the user has searched already or not, used for UI update
+  const [searchedReviewId, setSearchedReviewId] = useState(0); //0 for no and 1 for yes
 
   // For the update item feature, we need to track the ID of the item being updated and the new review text
   const [updatedReviewGameName, setUpdatedReviewGameName] = useState('');
@@ -37,12 +39,13 @@ function App() {
   //async helper method for getting the reviews by reviewId from the database
   const fetchItemsByReviewId = async (id) => {
     //clearing the return list incase there is any previous search results
-    setItemListSecond([])
+    setItemListSecond([]);
 
     try {
       const response = await fetch(`http://localhost:8080/api/items/${id}`, {
         method: 'GET'
       });
+      setSearchedReviewId(1); //setting searched to yes
       if (response.ok) {
         const data = await response.json();
         setItemListSecond(data);
@@ -51,7 +54,7 @@ function App() {
       console.error('Error fetching items for search by ID:', error);
     }
   };
-  
+
 
   const addItem = async () => {
     if (!newReviewGameName.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
@@ -260,7 +263,6 @@ function App() {
           </div>
 
 
-
           {/* Review search by the reviewId provided by the user */}
           <h2>Review Search by ID</h2>
           <p>Search for reviews using the GET an item request</p>
@@ -269,13 +271,22 @@ function App() {
             <input 
               type="text"
               value={searchTermId}
-              onChange={(e) => setSearchTermId(e.target.value)} 
+              onChange={(e) => {
+                setSearchTermId(e.target.value);
+                //setting searched useState variable to no if input is empty 
+                if(e.target.value.trim() === ""){
+                  setSearchedReviewId(0);
+                }
+              }}
               placeholder="Search for a review by its ID..."
             />
             <button 
               onClick={() => {
                 //not allowing a request if nothing or spaces are entered
-                if(!searchTermId.trim()){return};  
+                if(!searchTermId.trim()){
+                  setItemListSecond([]); //clearing the output if the search term is blank or just spaces
+                  return;
+                };  
                 //if given a correct input calling the async helper function after setting to lowercase
                 fetchItemsByReviewId(searchTermId.toLowerCase());          
               }}
@@ -290,7 +301,7 @@ function App() {
             <h3>Search Results</h3>
             {itemListSecond.length === 0 ? (
               <p className="no-items">
-                {searchTermId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
+                {searchedReviewId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
               </p>
             ) : (
               <ul>
