@@ -87,28 +87,28 @@ app.get('/api/items', async (req, res) => {
 
 //route to search reviews based on the review ID that the user inputted (READ), READ an item
 app.get('/api/items/:reviewId', async (req, res) => {
+    //getting the input parameter of reviewId
+    const { reviewId } = req.params;     
 
+    //checking if input is present
+    if (!reviewId) {
+        return res.status(400).json({ error: "Review ID input is required" });
+    }
+
+    //if the input is valid, then trying to search the database
     try {
-        //getting the input parameter of reviewId
-        const { reviewId } = req.params;     
 
-        //checking if input is present
-        if (!reviewId) {
-            return res.status(400).json({ error: "Review ID input is required" });
-        }
-
-        
         //checking if the reviewId input matches any instance in the database, then returning if found
-        const reviewReturn = await Review.findOne({reviewId: reviewId});
+        const reviewReturn = await Review.findOne({_id: reviewId});
         if (reviewReturn){
             return res.status(200).json([reviewReturn]);  //list encapsulation due to frontend map function
         }
         //if nothing is found then return empty list
         else{
+            console.log("incrorect")
             return res.status(200).json([]);
         }          
-        
-        // const updatedReviewData = await Review.findOneAndUpdate({ gameName: gameName }, { review: review, rating: rating }, { new: true });
+
     }
     catch (err) {
         console.error('Error trying to search database for review with the following reviewId: ' + reviewId + ' ' + err);

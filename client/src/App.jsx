@@ -3,7 +3,8 @@ import './App.css'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('page1');
-  const [itemList, setItemList] = useState([]);
+  const [itemList, setItemList] = useState([]); //review list for search by game
+  const [itemListSecond, setItemListSecond] = useState([]); //review list for search by ID
   //const [newItemName, setNewItemName] = useState('');
 
   const [newReviewGameName, setNewReviewGameName] = useState('');
@@ -31,6 +32,26 @@ function App() {
       console.error('Error fetching items:', error);
     }
   };
+
+
+  //async helper method for getting the reviews by reviewId from the database
+  const fetchItemsByReviewId = async (id) => {
+    //clearing the return list incase there is any previous search results
+    setItemListSecond([])
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/items/${id}`, {
+        method: 'GET'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setItemListSecond(data);
+      }
+    } catch (error) {
+      console.error('Error fetching items for search by ID:', error);
+    }
+  };
+  
 
   const addItem = async () => {
     if (!newReviewGameName.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
@@ -199,8 +220,8 @@ function App() {
       {/* Second HTML route for the Review Search by game and by Id, GET requests */}
       {currentPage === 'page2' && (
         <div className="page">
-          <h2>Review Search</h2>
-          <p>Search for reviews using the GET request</p>
+          <h2>Review Search by Game</h2>
+          <p>Search for reviews using the GET multiple items request</p>
 
           <div className="input-section">
             {/* On-change search feature */}
@@ -208,7 +229,7 @@ function App() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)} 
-              placeholder="Search for a review..."
+              placeholder="Search for a review by Game..."
             />
             <button onClick={() => fetchItems()}>Search (GET)</button>
           </div>
@@ -237,11 +258,55 @@ function App() {
               </ul>
             )}
           </div>
-        </div>
 
-        //search by ID to be added here--------------------
-        
+
+
+          {/* Review search by the reviewId provided by the user */}
+          <h2>Review Search by ID</h2>
+          <p>Search for reviews using the GET an item request</p>
+          <div className="input-section">
+            {/* On-change search feature */}
+            <input 
+              type="text"
+              value={searchTermId}
+              onChange={(e) => setSearchTermId(e.target.value)} 
+              placeholder="Search for a review by its ID..."
+            />
+            <button 
+              onClick={() => {
+                //not allowing a request if nothing or spaces are entered
+                if(!searchTermId.trim()){return};  
+                //if given a correct input calling the async helper function after setting to lowercase
+                fetchItemsByReviewId(searchTermId.toLowerCase());          
+              }}
+            >
+              Search (GET)
+            </button>
+          </div>
+
+
+          {/* Search results div for the search by reviewId */}
+          <div className="items-container">
+            <h3>Search Results</h3>
+            {itemListSecond.length === 0 ? (
+              <p className="no-items">
+                {searchTermId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
+              </p>
+            ) : (
+              <ul>
+                {itemListSecond.map(item => (
+                    <li key={item._id}>
+                      <span>{item.gameName} | {item.review} | Rating: {item.rating}/5</span>
+                      <span className="item-id">ID: {item._id}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
+
+        </div>
       )}
+
 
       {/* Third HTML route, for the about page */}
       {currentPage === 'page3' && (
