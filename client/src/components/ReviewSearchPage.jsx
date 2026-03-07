@@ -1,11 +1,14 @@
+//Second HTML route for the Review Search by game and by Id, GET requests
 import { useState } from 'react';
 
 function ReviewSearchPage({ itemList, onRefresh }) {
+
   const [searchTerm, setSearchTerm] = useState('');
   const [searchTermId, setSearchTermId] = useState('');
-  const [searchedReviewId, setSearchedReviewId] = useState(0);
-  const [itemListSecond, setItemListSecond] = useState([]);
+  const [searchedReviewId, setSearchedReviewId] = useState(0); //variable to accurately detect user input and provide appopriate UI responses
+  const [itemListSecond, setItemListSecond] = useState([]); //variable to keep the response from the GET an item request
 
+  // READ items via GET an item request
   const fetchItemsByReviewId = async (id) => {
     setItemListSecond([]);
 
@@ -23,11 +26,14 @@ function ReviewSearchPage({ itemList, onRefresh }) {
     }
   };
 
+
+  // Page consists of two sets of a search and a output list
   return (
     <div className="page">
       <h2>Review Search by Game</h2>
       <p>Search for reviews using the GET multiple items request</p>
 
+      {/* User input for the search by Game, GET multiple items request */}
       <div className="input-section">
         <input
           type="text"
@@ -37,7 +43,8 @@ function ReviewSearchPage({ itemList, onRefresh }) {
         />
         <button onClick={() => onRefresh()}>Search (GET)</button>
       </div>
-
+      
+      {/* Div to display the items resulting from the GET multiple items request */}
       <div className="items-container">
         <h3>Search Results ({itemList.filter(item =>
           item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,8 +57,9 @@ function ReviewSearchPage({ itemList, onRefresh }) {
           </p>
         ) : (
           <ul>
+            {/* Frontend dynamic search */}
             {itemList
-              .filter(item => item.gameName.toLowerCase().includes(searchTerm.toLowerCase()))
+              .filter(item => item.gameName.toLowerCase().includes(searchTerm.toLowerCase()))   
               .map(item => (
                 <li key={item._id}>
                   <span>{item.gameName} | {item.review} | Rating: {item.rating}/5</span>
@@ -62,7 +70,7 @@ function ReviewSearchPage({ itemList, onRefresh }) {
         )}
       </div>
 
-
+      {/* Review search by reviewId, this showcases the GET an item request */}
       <h2>Review Search by ID</h2>
       <p>Search for reviews using the GET an item request</p>
       <div className="input-section">
@@ -90,12 +98,12 @@ function ReviewSearchPage({ itemList, onRefresh }) {
         </button>
       </div>
 
-
+      {/* Review display for the returned search result of the search by reviewId*/}
       <div className="items-container">
         <h3>Search Results</h3>
         {itemListSecond.length === 0 ? (
           <p className="no-items">
-            {searchedReviewId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
+            {searchedReviewId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'} {/*Dynamic UI responses in the text based on user input and search return*/}
           </p>
         ) : (
           <ul>

@@ -1,3 +1,4 @@
+// Simple navigation bar for the webpage, allows routing to the three pages/views
 function NavBar({ currentPage, onNavigate }) {
   return (
     <div className="navigation">

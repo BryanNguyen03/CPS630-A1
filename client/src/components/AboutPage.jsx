@@ -1,3 +1,5 @@
+// Third HTML route, for the about page
+// Contains information about the project
 function AboutPage() {
   return (
     <div className="page">
@@ -6,9 +8,9 @@ function AboutPage() {
       <section>
         <h3>Project Overview</h3>
         <p>
-          This is Assignment 1 for CPS630 - Web Applications Development.
-          The application demonstrates a full-stack web application using React for the frontend
-          and Node.js with Express for the backend.
+          This is Assignment 2 for CPS630 - Web Applications Development.
+          The application demonstrates a full-stack web application using React for the frontend,
+          Node.js with Express for the backend, and MongoDB for the database.
         </p>
       </section>
 
@@ -18,7 +20,9 @@ function AboutPage() {
           <li><strong>GET Request:</strong> Retrieves all items from the server</li>
           <li><strong>POST Request:</strong> Sends new item data to create items on the server</li>
           <li><strong>DELETE Request:</strong> Removes items from the server by ID</li>
-          <li><strong>Item Search:</strong> Search and filter items using GET request</li>
+          <li><strong>UPDATE Request:</strong> Allows for updating an existing review in the database via specified Game</li>
+          <li><strong>Item Search by Game:</strong> Search and filter items by Game using GET request</li>
+          <li><strong>Item Search by ReviewID:</strong> Search and filter items by ReviewID using GET request</li>
           <li><strong>Multi-page Navigation:</strong> Three different web pages to navigate between</li>
         </ul>
       </section>
@@ -40,6 +44,7 @@ function AboutPage() {
               <li>Node.js</li>
               <li>Express.js</li>
               <li>CORS</li>
+              <li>MongoDB</li>
             </ul>
           </div>
         </div>

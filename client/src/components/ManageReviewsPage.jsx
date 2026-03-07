@@ -1,6 +1,8 @@
+// First HTML route for the Manage Reviews, which has GET POST and DELETE requests 
 import { useState } from 'react';
 
 function ManageReviewsPage({ itemList, onRefresh }) {
+  //user input useState variables
   const [newReviewGameName, setNewReviewGameName] = useState('');
   const [newReviewRating, setNewReviewRating] = useState('');
   const [newReviewText, setNewReviewText] = useState('');
@@ -9,6 +11,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
 
+  // CREATE an item via POST request
   const addItem = async () => {
     if (!newReviewGameName.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
       alert('Please enter all review fields');
@@ -34,6 +37,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
     }
   };
 
+  // DELETE an item via DELETE request
   const deleteItem = async (id) => {
     try {
       const response = await fetch(`http://localhost:8080/api/items/${id}`, {
@@ -49,13 +53,14 @@ function ManageReviewsPage({ itemList, onRefresh }) {
     }
   };
 
+  // UPDATE an item via PUT request
   const updateItem = async (gameName) => {
     try {
       if (!updatedReview.trim() || !updatedRating.trim() || !updatedReviewGameName.trim()) {
         alert('Please enter the updated review text, rating, and game name');
         return;
       }
-
+      
       if (isNaN(updatedRating) || updatedRating < 1 || updatedRating > 5) {
         alert('Rating must be a number between 1 and 5');
         return;
@@ -71,6 +76,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
 
       if (response.ok) {
         console.log('Item updated successfully');
+        // clear the update input fields after successful update
         setUpdatedReview('');
         setUpdatedRating('');
         setUpdatedReviewGameName('');
@@ -91,6 +97,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
       <h2>Manage Reviews</h2>
       <p>Manage reviews with GET, POST, and DELETE requests</p>
 
+      {/* User input for adding a new review */}
       <div className="input-section">
         <input
           type="text"
@@ -113,6 +120,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
         <button onClick={addItem}>Add Review (POST)</button>
       </div>
 
+      {/* displaying all the current reviews in the database, including a delete button for each */}
       <div className="items-container">
         <h3>Reviews ({itemList.length})</h3>
         {itemList.length === 0 ? (
@@ -127,6 +135,8 @@ function ManageReviewsPage({ itemList, onRefresh }) {
             ))}
           </ul>
         )}
+
+        {/* User input for updating an existing review */}
         <div className="input-section">
           <input type="text" placeholder="Game to update" value={updatedReviewGameName} onChange={(e) => setUpdatedReviewGameName(e.target.value)} />
           <input type="text" placeholder="Updated review" value={updatedReview} onChange={(e) => setUpdatedReview(e.target.value)} />

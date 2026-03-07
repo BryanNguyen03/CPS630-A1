@@ -5,6 +5,7 @@ import ManageReviewsPage from './components/ManageReviewsPage'
 import ReviewSearchPage from './components/ReviewSearchPage'
 import AboutPage from './components/AboutPage'
 
+// App component where all of our upper level components are located, these include the nav bar and 3 pages
 function App() {
   const [currentPage, setCurrentPage] = useState('page1');
   const [itemList, setItemList] = useState([]);
