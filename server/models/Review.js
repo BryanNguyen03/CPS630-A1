@@ -5,7 +5,7 @@ const ReviewSchema = new mongoose.Schema({
     userId: {
         type: Number,
         unique: false,
-        required: true,
+        required: false,
         min: 0
     },
     gameName: {
