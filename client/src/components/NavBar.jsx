@@ -20,6 +20,14 @@ function NavBar({ token, onLogout }) {
       >
         Review Manager
       </button>
+
+    <button
+        className={isActive('/games') ? 'active' : ''}
+        onClick={() => navigate('/games')}
+      >
+        Games
+      </button>
+
       <button
         className={isActive('/search') ? 'active' : ''}
         onClick={() => navigate('/search')}

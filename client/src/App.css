@@ -315,3 +315,71 @@ section li {
     grid-template-columns: 1fr;
   }
 }
+
+
+.search-container {
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  color: inherit;
+  font-family: inherit;
+  transition: border-color 0.25s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+/* Light mode search adjustment */
+@media (prefers-color-scheme: light) {
+  .search-input {
+    background-color: #f9f9f9;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Games Grid Layout */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  text-align: left;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.game-card:hover {
+  border-color: #646cff;
+  transform: translateY(-4px);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.game-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #646cff; /* Primary theme color */
+}

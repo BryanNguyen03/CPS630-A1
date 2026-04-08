@@ -7,6 +7,7 @@ import ReviewSearchPage from './components/ReviewSearchPage'
 import AboutPage from './components/AboutPage'
 import RegisterPage from './components/RegisterPage'
 import LoginPage from './components/LoginPage'
+import GamesPage from './components/GamesPage'
 
 // Protected route component
 function ProtectedRoute({ children, token }) {
@@ -70,6 +71,9 @@ function App() {
           path="/about"
           element={<AboutPage />}
         />
+        
+        <Route path="/games" element={<GamesPage itemList={itemList} />} />
+  
         <Route
           path="/login"
           element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
