@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  favouriteGame: {
+    type: String,
+    required: false,
+    trim: true
   }
 }, {
   timestamps: true

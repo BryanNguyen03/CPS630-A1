@@ -11,7 +11,7 @@ import LoginPage from './components/LoginPage'
 function App() {
   const [currentPage, setCurrentPage] = useState('page1');
   const [itemList, setItemList] = useState([]);
-  const [token, setToken] = useState(localStorage.getItem('authToken') || '');
+  const [token, setToken] = useState(localStorage.getItem('authToken') || '');   //storing the JWT locally on the client side
 
   const fetchItems = async () => {
     try {
@@ -43,7 +43,7 @@ function App() {
         token={token}
         onLogout={handleLogout}
       />
-      {currentPage === 'page1' && (
+      {currentPage === 'page1' && (                     //NEED TO FIX THE NAMES FOR THE CURRENT PAGE=== stuff
         token ? (
           <ManageReviewsPage itemList={itemList} onRefresh={fetchItems} />
         ) : (
