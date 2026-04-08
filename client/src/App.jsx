@@ -8,6 +8,7 @@ import AboutPage from './components/AboutPage'
 import RegisterPage from './components/RegisterPage'
 import LoginPage from './components/LoginPage'
 import GamesPage from './components/GamesPage'
+import GameDetailsPage from './components/GameDetailsPage'
 
 // Protected route component
 function ProtectedRoute({ children, token }) {
@@ -71,8 +72,13 @@ function App() {
           path="/about"
           element={<AboutPage />}
         />
-        
+
         <Route path="/games" element={<GamesPage itemList={itemList} />} />
+
+        <Route 
+          path="/games/:id/reviews" 
+          element={<GameDetailsPage itemList={itemList} />} 
+        />
   
         <Route
           path="/login"
