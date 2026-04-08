@@ -1,4 +1,8 @@
 /* Universal CSS formatting for the whole site (Within App.jsx) is located in this css file */
+
+
+/* add viewport for mobile view to prevent auto zoom out */
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

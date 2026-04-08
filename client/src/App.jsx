@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import NavBar from './components/NavBar'
 import ManageReviewsPage from './components/ManageReviewsPage'
@@ -7,9 +8,16 @@ import AboutPage from './components/AboutPage'
 import RegisterPage from './components/RegisterPage'
 import LoginPage from './components/LoginPage'
 
+// Protected route component
+function ProtectedRoute({ children, token }) {
+  if (!token) {
+    return <p>Please log in to manage reviews.</p>;
+  }
+  return children;
+}
+
 // App component where all of our upper level components are located, these include the nav bar and 3 pages
 function App() {
-  const [currentPage, setCurrentPage] = useState('page1');
   const [itemList, setItemList] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('authToken') || '');   //storing the JWT locally on the client side
 
@@ -30,6 +38,10 @@ function App() {
     setToken('');
   };
 
+  const handleLoginSuccess = (newToken) => {
+    setToken(newToken);
+  };
+
   useEffect(() => {
     fetchItems();
   }, []);
@@ -38,32 +50,36 @@ function App() {
     <div>
       <h1>ReviewLog</h1>
       <NavBar
-        currentPage={currentPage}
-        onNavigate={setCurrentPage}
         token={token}
         onLogout={handleLogout}
       />
-      {currentPage === 'page1' && (                     //NEED TO FIX THE NAMES FOR THE CURRENT PAGE=== stuff
-        token ? (
-          <ManageReviewsPage itemList={itemList} onRefresh={fetchItems} />
-        ) : (
-          <p>Please log in to manage reviews.</p>
-        )
-      )}
-      {currentPage === 'page2' && (
-        <ReviewSearchPage itemList={itemList} onRefresh={fetchItems} />
-      )}
-      {currentPage === 'page3' && <AboutPage />}
-      {currentPage === 'register' && <RegisterPage />}
-      {currentPage === 'login' && (
-        <LoginPage
-        // Pass a callback to update the token in App.js when login is successful
-          onLoginSuccess={(newToken) => {
-            setToken(newToken);
-            setCurrentPage('page1'); // Display review manager if logged in successfully
-          }}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute token={token}>
+              <ManageReviewsPage itemList={itemList} onRefresh={fetchItems} />
+            </ProtectedRoute>
+          }
         />
-      )}
+        <Route
+          path="/search"
+          element={<ReviewSearchPage itemList={itemList} onRefresh={fetchItems} />}
+        />
+        <Route
+          path="/about"
+          element={<AboutPage />}
+        />
+        <Route
+          path="/login"
+          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+        />
+        <Route
+          path="/register"
+          element={<RegisterPage />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   )
 }

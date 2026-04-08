@@ -1,22 +1,34 @@
+import { useNavigate, useLocation } from 'react-router-dom'
+
 // Simple navigation bar for the webpage, allows routing to the three pages/views
-function NavBar({ currentPage, onNavigate, token, onLogout }) {
+function NavBar({ token, onLogout }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/login');
+  };
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <div className="navigation">
       <button
-        className={currentPage === 'page1' ? 'active' : ''}
-        onClick={() => onNavigate('page1')}
+        className={isActive('/') ? 'active' : ''}
+        onClick={() => navigate('/')}
       >
         Review Manager
       </button>
       <button
-        className={currentPage === 'page2' ? 'active' : ''}
-        onClick={() => onNavigate('page2')}
+        className={isActive('/search') ? 'active' : ''}
+        onClick={() => navigate('/search')}
       >
         Review Search
       </button>
       <button
-        className={currentPage === 'page3' ? 'active' : ''}
-        onClick={() => onNavigate('page3')}
+        className={isActive('/about') ? 'active' : ''}
+        onClick={() => navigate('/about')}
       >
         About
       </button>
@@ -24,7 +36,7 @@ function NavBar({ currentPage, onNavigate, token, onLogout }) {
       {token ? (
         <button
           className="logout-btn"
-          onClick={onLogout}
+          onClick={handleLogout}
           style={{ backgroundColor: '#ff4444', color: 'white' }}
         >
           Logout
@@ -32,14 +44,14 @@ function NavBar({ currentPage, onNavigate, token, onLogout }) {
       ) : (
         <>
           <button
-            className={currentPage === 'login' ? 'active' : ''}
-            onClick={() => onNavigate('login')}
+            className={isActive('/login') ? 'active' : ''}
+            onClick={() => navigate('/login')}
           >
             Login
           </button>
           <button
-            className={currentPage === 'register' ? 'active' : ''}
-            onClick={() => onNavigate('register')}
+            className={isActive('/register') ? 'active' : ''}
+            onClick={() => navigate('/register')}
           >
             Register
           </button>
