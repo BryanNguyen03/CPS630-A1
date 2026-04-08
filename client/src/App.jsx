@@ -4,11 +4,14 @@ import NavBar from './components/NavBar'
 import ManageReviewsPage from './components/ManageReviewsPage'
 import ReviewSearchPage from './components/ReviewSearchPage'
 import AboutPage from './components/AboutPage'
+import RegisterPage from './components/RegisterPage'
+import LoginPage from './components/LoginPage'
 
 // App component where all of our upper level components are located, these include the nav bar and 3 pages
 function App() {
   const [currentPage, setCurrentPage] = useState('page1');
   const [itemList, setItemList] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem('authToken') || '');   //storing the JWT locally on the client side
 
   const fetchItems = async () => {
     try {
@@ -22,6 +25,11 @@ function App() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    setToken('');
+  };
+
   useEffect(() => {
     fetchItems();
   }, []);
@@ -29,14 +37,33 @@ function App() {
   return (
     <div>
       <h1>ReviewLog</h1>
-      <NavBar currentPage={currentPage} onNavigate={setCurrentPage} />
-      {currentPage === 'page1' && (
-        <ManageReviewsPage itemList={itemList} onRefresh={fetchItems} />
+      <NavBar
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        token={token}
+        onLogout={handleLogout}
+      />
+      {currentPage === 'page1' && (                     //NEED TO FIX THE NAMES FOR THE CURRENT PAGE=== stuff
+        token ? (
+          <ManageReviewsPage itemList={itemList} onRefresh={fetchItems} />
+        ) : (
+          <p>Please log in to manage reviews.</p>
+        )
       )}
       {currentPage === 'page2' && (
         <ReviewSearchPage itemList={itemList} onRefresh={fetchItems} />
       )}
       {currentPage === 'page3' && <AboutPage />}
+      {currentPage === 'register' && <RegisterPage />}
+      {currentPage === 'login' && (
+        <LoginPage
+        // Pass a callback to update the token in App.js when login is successful
+          onLoginSuccess={(newToken) => {
+            setToken(newToken);
+            setCurrentPage('page1'); // Display review manager if logged in successfully
+          }}
+        />
+      )}
     </div>
   )
 }

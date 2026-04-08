@@ -1,5 +1,5 @@
 // Simple navigation bar for the webpage, allows routing to the three pages/views
-function NavBar({ currentPage, onNavigate }) {
+function NavBar({ currentPage, onNavigate, token, onLogout }) {
   return (
     <div className="navigation">
       <button
@@ -20,6 +20,31 @@ function NavBar({ currentPage, onNavigate }) {
       >
         About
       </button>
+
+      {token ? (
+        <button
+          className="logout-btn"
+          onClick={onLogout}
+          style={{ backgroundColor: '#ff4444', color: 'white' }}
+        >
+          Logout
+        </button>
+      ) : (
+        <>
+          <button
+            className={currentPage === 'login' ? 'active' : ''}
+            onClick={() => onNavigate('login')}
+          >
+            Login
+          </button>
+          <button
+            className={currentPage === 'register' ? 'active' : ''}
+            onClick={() => onNavigate('register')}
+          >
+            Register
+          </button>
+        </>
+      )}
     </div>
   );
 }

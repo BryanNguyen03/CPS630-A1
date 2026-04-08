@@ -3,6 +3,9 @@ const cors = require('cors');
 const app = express();
 const path = require('path');
 const Review = require('./models/Review');
+const User = require('./models/User');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 
 //server port
@@ -183,6 +186,57 @@ app.delete('/api/items/:id', async (req, res) => {
         res.status(500).json({ error: "Failed to delete review" });
     }
 });
+
+// ############ user auth routes ############
+
+//route for user registration
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Hash the password before saving
+        const salt = await bcrypt.genSalt(10);  //using bcrypt
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        //Creating a new user document using their username and hashed password
+        const user = new User({ username, password: hashedPassword });      
+        await user.save();
+        res.status(201).json({ message: 'User registered successfully' });
+
+    //returning an error if a new user cannot be created
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+//route for user login
+app.post('/api/login', async (req, res) => {
+    try {
+        //getting the user input
+        const { username, password } = req.body;
+        //checking if user exists in the database, if not then returning error
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        //if user is found then validating the password, by comparing the hashed input to the stored password hash in the database
+        const isMatch = await bcrypt.compare(password, user.password);
+        //if the password is wrong then returning an error
+        if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+        //if the password is correct then assigning the JSON web token to the user 
+        //Signing it with the internal JWT secret, using the username, and unique document ID of the user
+        const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.json({ token, username: user.username });
+    
+    //catching any errors
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 
 
 console.log('__dirname: ' + __dirname);
