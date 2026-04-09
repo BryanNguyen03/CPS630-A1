@@ -9,6 +9,7 @@ import RegisterPage from './components/RegisterPage'
 import LoginPage from './components/LoginPage'
 import GamesPage from './components/GamesPage'
 import GameDetailsPage from './components/GameDetailsPage'
+import UserPage from './components/UserPage'
 
 // Protected route component
 function ProtectedRoute({ children, token }) {
@@ -21,6 +22,15 @@ function ProtectedRoute({ children, token }) {
 // App component where all of our upper level components are located, these include the nav bar and 3 pages
 function App() {
   const [itemList, setItemList] = useState([]);
+
+
+
+  const [userList, setUserList] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState({ username: localStorage.getItem('authUsername') || '' });
+  
+  
+
   const [token, setToken] = useState(localStorage.getItem('authToken') || '');   //storing the JWT locally on the client side
 
   const fetchItems = async () => {
@@ -35,17 +45,38 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    setToken('');
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUserList(data);
+        if (!selectedUser && data.length > 0) {
+          setSelectedUser(data[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
   };
 
-  const handleLoginSuccess = (newToken) => {
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUsername');
+    setToken('');
+    setCurrentUser({ username: '' });
+  };
+
+  const handleLoginSuccess = ({ token: newToken, username }) => {
+    localStorage.setItem('authToken', newToken);
+    localStorage.setItem('authUsername', username);
     setToken(newToken);
+    setCurrentUser({ username });
   };
 
   useEffect(() => {
     fetchItems();
+    fetchUsers();
   }, []);
 
   return (
@@ -87,6 +118,18 @@ function App() {
         <Route
           path="/register"
           element={<RegisterPage />}
+        />
+        <Route
+          path="/user"
+          element={
+            <UserPage
+              currentUser={currentUser}
+              selectedUser={selectedUser}
+              users={userList}
+              onSelectedUserChange={setSelectedUser}
+              token={token}
+            />
+          }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
