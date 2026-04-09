@@ -93,9 +93,9 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
 
   return (
     <div className="page">
+
       <h2>User Details</h2>
       <h3>Welcome, {currentUser?.username}</h3>
-
       <div className="user-selection-section">
         <h3>Find a User</h3>
         <div className="search-container">
@@ -112,8 +112,8 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
           {searchTerm && filteredUsers.length > 0 ? (
             <ul className="user-list">
               {filteredUsers.map((user) => (
-                <li 
-                  key={user.username} 
+                <li
+                  key={user.username}
                   className={`user-item ${selectedUser?.username === user.username ? 'active-user' : ''}`}
                   onClick={() => {
                     onSelectedUserChange(user);
@@ -142,9 +142,9 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
             <p className="no-items">No messages yet.</p>
           ) : (
             messages.map((message, index) => (
-              <div key={index} style={{ 
-                marginBottom: '8px', 
-                textAlign: message.from === currentUser?.username ? 'right' : 'left' 
+              <div key={index} style={{
+                marginBottom: '8px',
+                textAlign: message.from === currentUser?.username ? 'right' : 'left'
               }}>
                 <div style={{
                   display: 'inline-block',
@@ -174,26 +174,39 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
         </div>
       </div>
 
-      <div className="user-reviews" style={{ border: '1px solid #ddd', padding: '15px', marginTop: '15px' }}>
-        <h4>{selectedUser.username}'s Reviews</h4>
-        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-          {/* WILL NEED TO PRINT OUT BELOW AND SEE OUTPUT FOR ITEM AND SELECTED USER------------------FIRST RUN IT--------------------------- */}
-          {itemList.filter(item => item.userId === selectedUser._id).map((review) => (             
-            
-            // maybe can remove the rest of this, and just keep review._id since that will be unique always
-            <Review key={review._id || review.igdbId + Math.random()} review={review} />           
-          ))}
 
-          {/* If there is no reviews by the user, then showing placeholder text indicating this*/}
-          {itemList.filter(item => item.userId === selectedUser._id).length === 0 && (
-            <p>This user has no reviews.</p>
-          )}
+      {/* Conditional to only show the other profile details if a user is selected */}
+      {selectedUser ? (
+      <div>
+
+        <div className="user-reviews" style={{ border: '1px solid #ddd', padding: '15px', marginTop: '15px' }}>
+          <h4>{selectedUser.username}'s Reviews</h4>
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+
+            {itemList.filter(item => item.userId === selectedUser._id).map((review) => (
+
+              <Review key={review._id || review.igdbId + Math.random()} review={review} />
+
+            ))}
+
+            {/* If there is no reviews by the user, then showing placeholder text indicating this*/}
+            {itemList.filter(item => item.userId === selectedUser._id).length === 0 && (
+              <p>This user has no reviews.</p>
+            )}
+          </div>
         </div>
+
       </div>
 
-
+      ) : (
+      <div>
+        <p>Please Select A User Above</p>
+      </div>
+      )}
 
     </div>
+
+
   );
 };
 
