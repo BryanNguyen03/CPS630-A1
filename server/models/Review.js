@@ -12,6 +12,11 @@ const ReviewSchema = new mongoose.Schema({
         required: true,
         unique: false
     },
+    gameName: {
+        type: String,
+        required: true,
+        unique: false
+    },
     review: {
         type: String,
         unique: false,

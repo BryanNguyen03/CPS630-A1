@@ -56,12 +56,12 @@ db.on('open', function() {
 const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
 
 let reviews = [
-    { igdbId: 12345, review:"Ruined my life",   rating: 5},
-    { igdbId: 12345, review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
-    { igdbId: 69696, review:"Always rage, always come back", rating: 3},
-    { igdbId: 69696, review:"Too many Sweats", rating: 5},
-    { igdbId: 69696, review:"Same game as last year", rating:2},
-    { igdbId: 69696, review:"Can't go wrong with Minecraft", rating:5}
+    { igdbId: 12345, gameName: "Apex Legends", review:"Ruined my life",   rating: 5},
+    { igdbId: 12345, gameName: "Apex Legends", review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
+    { igdbId: 69696, gameName: "Minecraft", review:"Always rage, always come back", rating: 3},
+    { igdbId: 69696, gameName: "Minecraft", review:"Too many Sweats", rating: 5},
+    { igdbId: 69696, gameName: "Minecraft", review:"Same game as last year", rating:2},
+    { igdbId: 69696, gameName: "Minecraft", review:"Can't go wrong with Minecraft", rating:5}
 ];
 
 let dummyUsers = [
@@ -192,7 +192,7 @@ app.get('/api/items/:reviewId', async (req, res) => {
 app.post('/api/items', async (req, res) => {
     const newReview = req.body;
 
-    if (newReview && newReview.igdbId !== undefined && newReview.review && newReview.rating) {
+    if (newReview && newReview.igdbId !== undefined && newReview.gameName && newReview.review && newReview.rating) {
         const review = new Review(newReview);
 
         review.save()
@@ -216,12 +216,18 @@ app.patch('/api/items/:igdbId', async (req, res) => {
 
     try {
         const { igdbId } = req.params;
-        const { review, rating } = req.body;
+        const { review, rating, gameName } = req.body;
 
-        if (!review && !rating) {
-            return res.status(400).json({ error: "Review text or rating required" });
+        if (!review && !rating && !gameName) {
+            return res.status(400).json({ error: "Review text, rating, or game name required" });
         }
-        const updatedReviewData = await Review.findOneAndUpdate({ igdbId: Number(igdbId) }, { review: review, rating: rating }, { new: true });
+        
+        let updateFields = {};
+        if (review) updateFields.review = review;
+        if (rating) updateFields.rating = rating;
+        if (gameName) updateFields.gameName = gameName;
+        
+        const updatedReviewData = await Review.findOneAndUpdate({ igdbId: Number(igdbId) }, updateFields, { new: true });
         
         
         if (updatedReviewData) {

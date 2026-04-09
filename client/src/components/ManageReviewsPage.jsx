@@ -4,16 +4,18 @@ import { useState } from 'react';
 function ManageReviewsPage({ itemList, onRefresh }) {
   //user input useState variables
   const [newReviewIgdbId, setNewReviewIgdbId] = useState('');
+  const [newReviewGameName, setNewReviewGameName] = useState('');
   const [newReviewRating, setNewReviewRating] = useState('');
   const [newReviewText, setNewReviewText] = useState('');
 
   const [updatedReviewIgdbId, setUpdatedReviewIgdbId] = useState('');
+  const [updatedReviewGameName, setUpdatedReviewGameName] = useState('');
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
 
   // CREATE an item via POST request
   const addItem = async () => {
-    if (!newReviewIgdbId.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
+    if (!newReviewIgdbId.trim() || !newReviewGameName.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
       alert('Please enter all review fields');
       return;
     }
@@ -24,10 +26,11 @@ function ManageReviewsPage({ itemList, onRefresh }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ igdbId: newReviewIgdbId, review: newReviewText, rating: newReviewRating })
+        body: JSON.stringify({ igdbId: newReviewIgdbId, gameName: newReviewGameName, review: newReviewText, rating: newReviewRating })
       });
       if (response.ok) {
         setNewReviewIgdbId('');
+        setNewReviewGameName('');
         setNewReviewText('');
         setNewReviewRating('');
         onRefresh();
@@ -56,12 +59,16 @@ function ManageReviewsPage({ itemList, onRefresh }) {
   // UPDATE an item via PUT request
   const updateItem = async (igdbId) => {
     try {
-      if (!updatedReview.trim() || !updatedRating.trim() || !updatedReviewIgdbId.trim()) {
-        alert('Please enter the updated review text, rating, and game name');
+      if (!updatedReviewIgdbId.trim()) {
+        alert('Please enter the Game ID to update');
+        return;
+      }
+      if (!updatedReview.trim() && !updatedRating.trim() && !updatedReviewGameName.trim()) {
+        alert('Please enter at least one field to update');
         return;
       }
       
-      if (isNaN(updatedRating) || updatedRating < 1 || updatedRating > 5) {
+      if (updatedRating && (isNaN(updatedRating) || updatedRating < 1 || updatedRating > 5)) {
         alert('Rating must be a number between 1 and 5');
         return;
       }
@@ -71,7 +78,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ review: updatedReview, rating: updatedRating })
+        body: JSON.stringify({ gameName: updatedReviewGameName, review: updatedReview, rating: updatedRating })
       });
 
       if (response.ok) {
@@ -79,6 +86,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
         // clear the update input fields after successful update
         setUpdatedReview('');
         setUpdatedRating('');
+        setUpdatedReviewGameName('');
         setUpdatedReviewIgdbId('');
         onRefresh();
       }
@@ -103,6 +111,12 @@ function ManageReviewsPage({ itemList, onRefresh }) {
           type="text"
           value={newReviewIgdbId}
           onChange={(e) => setNewReviewIgdbId(e.target.value)}
+          placeholder="Enter game ID"
+        />
+        <input
+          type="text"
+          value={newReviewGameName}
+          onChange={(e) => setNewReviewGameName(e.target.value)}
           placeholder="Enter game name"
         />
         <input
@@ -129,7 +143,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
           <ul>
             {itemList.map(item => (
               <li key={item._id}>
-                <span>{item.igdbId} | {item.review} | Rating: {item.rating}/5</span>
+                <span>{item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5</span>
                 <button onClick={() => deleteItem(item._id)}>Delete (DELETE)</button>
               </li>
             ))}
@@ -138,9 +152,10 @@ function ManageReviewsPage({ itemList, onRefresh }) {
 
         {/* User input for updating an existing review */}
         <div className="input-section">
-          <input type="text" placeholder="Game to update" value={updatedReviewIgdbId} onChange={(e) => setUpdatedReviewIgdbId(e.target.value)} />
-          <input type="text" placeholder="Updated review" value={updatedReview} onChange={(e) => setUpdatedReview(e.target.value)} />
-          <input type="number" placeholder="Updated Rating" value={updatedRating} onChange={(e) => setUpdatedRating(e.target.value)} />
+          <input type="text" placeholder="Game ID to update" value={updatedReviewIgdbId} onChange={(e) => setUpdatedReviewIgdbId(e.target.value)} />
+          <input type="text" placeholder="Updated Game Name" value={updatedReviewGameName} onChange={(e) => setUpdatedReviewGameName(e.target.value)} />
+          <input type="text" placeholder="Updated review text" value={updatedReview} onChange={(e) => setUpdatedReview(e.target.value)} />
+          <input type="number" placeholder="Updated Rating (1-5)" value={updatedRating} onChange={(e) => setUpdatedRating(e.target.value)} />
           <button onClick={() => updateItem(updatedReviewIgdbId)}>Update Review (PUT)</button>
         </div>
       </div>
