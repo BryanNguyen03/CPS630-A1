@@ -93,6 +93,7 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
   return (
     <div className="page">
       <h2>User Details</h2>
+      <h3>Welcome, {currentUser?.username}</h3>
 
       <div className="user-info">
         <label htmlFor="selected-user">
