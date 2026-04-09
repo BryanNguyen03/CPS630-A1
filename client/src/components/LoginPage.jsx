@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = ({ onLoginSuccess }) => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -21,6 +23,7 @@ const LoginPage = ({ onLoginSuccess }) => {
         localStorage.setItem('authToken', receivedToken);
         localStorage.setItem('authUsername', username);
         onLoginSuccess({ token: receivedToken, username }); // Update token and username in App.js
+        navigate('/', { replace: true });
         alert('Login successful!');
 
       } else {
