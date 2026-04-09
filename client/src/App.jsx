@@ -10,7 +10,6 @@ import LoginPage from './components/LoginPage'
 import GamesPage from './components/GamesPage'
 import GameDetailsPage from './components/GameDetailsPage'
 import UserPage from './components/UserPage'
-import UserProfilePlaceholderPage from './components/UserProfilePlaceholderPage'
 
 // Protected route component
 function ProtectedRoute({ children, token }) {
@@ -134,7 +133,14 @@ function App() {
             />
           }
         />
-        <Route path="/users/:username" element={<UserProfilePlaceholderPage />} />
+        <Route
+          path="/users/:username"
+          element={
+            <ProtectedRoute token={token}>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
