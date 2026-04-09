@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import ReviewList from './ReviewList';
 
 function GameDetailsPage({ token, currentUser }) {
   const { id } = useParams();
@@ -165,23 +166,11 @@ function GameDetailsPage({ token, currentUser }) {
       )}
 
       <div className="reviews-list">
-        {reviews.length > 0 ? (
-          reviews.map((review) => (
-            <div key={review._id} className="game-card" style={{ marginBottom: '15px' }}>
-              <div className="game-header">
-                <strong>{review.userName}</strong>
-                <span className={`rating-badge rate-${review.rating}`}>
-                  {review.rating}/5
-                </span>
-              </div>
-              <div className="game-body">
-                <p>"{review.review}"</p>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p>No reviews yet for this game.</p>
-        )}
+        <ReviewList
+          reviews={reviews}
+          linkMode="profile"
+          emptyMessage="No reviews yet for this game."
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
-import Review from './Review';
+import ReviewList from './ReviewList';
 
 const socketServerUrl = 'http://localhost:8080';
 
@@ -15,6 +15,10 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) &&
     user.username !== currentUser?.username
   );
+
+  const selectedUserReviews = selectedUser
+    ? itemList.filter((item) => String(item.userId) === String(selectedUser._id))
+    : [];
 
   useEffect(() => {
     if (!token) {
@@ -182,17 +186,11 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
         <div className="user-reviews" style={{ border: '1px solid #ddd', padding: '15px', marginTop: '15px' }}>
           <h4>{selectedUser.username}'s Reviews</h4>
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-
-            {itemList.filter(item => item.userId === selectedUser._id).map((review) => (
-
-              <Review key={review._id || review.igdbId + Math.random()} review={review} />
-
-            ))}
-
-            {/* If there is no reviews by the user, then showing placeholder text indicating this*/}
-            {itemList.filter(item => item.userId === selectedUser._id).length === 0 && (
-              <p>This user has no reviews.</p>
-            )}
+            <ReviewList
+              reviews={selectedUserReviews}
+              linkMode="game"
+              emptyMessage="This user has no reviews."
+            />
           </div>
         </div>
 
