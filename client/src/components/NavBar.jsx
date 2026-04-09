@@ -27,6 +27,12 @@ function NavBar({ token, onLogout }) {
         Review Search
       </button>
       <button
+        className={isActive('/user') ? 'active' : ''}
+        onClick={() => navigate('/user')}
+      >
+        User Page
+      </button>
+      <button
         className={isActive('/about') ? 'active' : ''}
         onClick={() => navigate('/about')}
       >

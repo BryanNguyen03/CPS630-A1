@@ -17,8 +17,10 @@ const LoginPage = ({ onLoginSuccess }) => {
       if (response.ok) {
         const data = await response.json();
         const receivedToken = data.token;
+        const username = data.username;
         localStorage.setItem('authToken', receivedToken);
-        onLoginSuccess(receivedToken); // Update token in App.js
+        localStorage.setItem('authUsername', username);
+        onLoginSuccess({ token: receivedToken, username }); // Update token and username in App.js
         alert('Login successful!');
 
       } else {

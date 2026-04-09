@@ -2,8 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 const Review = require('./models/Review');
 const User = require('./models/User');
+const Message = require('./models/Message');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -13,8 +16,16 @@ const PORT = 8080;
 
 
 //setting up CORS and Express
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST']
+  }
+});
 
 
 //Setting up environment variables for the database server init
@@ -187,6 +198,56 @@ app.delete('/api/items/:id', async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+//Real time messaging routes
+
+app.get('/api/users', async (req, res) => {
+    try {
+        const users = await User.find({}, 'username favouriteGame');
+        res.status(200).json(users);
+    } catch (err) {
+        console.error('Error fetching users', err);
+        res.status(500).json({ error: 'Failed to load users' });
+    }
+});
+
+app.get('/api/messages', async (req, res) => {
+    const { from, to } = req.query;
+    if (!from || !to) {
+        return res.status(400).json({ error: 'Both from and to query values are required' });
+    }
+
+    try {
+        const messages = await Message.find({
+            $or: [
+                { from: from, to: to },
+                { from: to, to: from }
+            ]
+        }).sort({ timestamp: 1 });
+        res.status(200).json(messages);
+    } catch (err) {
+        console.error('Error fetching messages', err);
+        res.status(500).json({ error: 'Failed to load messages' });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 // ############ user auth routes ############
 
 //route for user registration
@@ -238,7 +299,48 @@ app.post('/api/login', async (req, res) => {
 
 
 
+io.on('connection', (socket) => {
+    console.log('Socket connected:', socket.id);
+
+    socket.on('joinRoom', ({ room }) => {
+        if (room) {
+            socket.join(room);
+            console.log('Socket joined room:', room);
+        }
+    });
+
+    socket.on('chatMessage', async (message) => {
+        if (!message || !message.from || !message.to || !message.text) {
+            return;
+        }
+
+        const room = [message.from, message.to].sort().join(':');
+        const savedMessage = new Message({
+            from: message.from,
+            to: message.to,
+            text: message.text,
+            timestamp: message.timestamp ? new Date(message.timestamp) : new Date()
+        });
+
+        try {
+            await savedMessage.save();
+        } catch (err) {
+            console.error('Error saving chat message:', err);
+        }
+
+        io.to(room).emit('chatMessage', {
+            from: message.from,
+            to: message.to,
+            text: message.text,
+            timestamp: savedMessage.timestamp
+        });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Socket disconnected:', socket.id);
+    });
+});
 
 console.log('__dirname: ' + __dirname);
-//starting the express server
-app.listen(PORT, () => { console.log("Server started on port " + PORT); });
+//starting the server to listen to any events (Using server listen because it allows both express and socket.io events)
+server.listen(PORT, () => { console.log("Server started on port " + PORT); });
