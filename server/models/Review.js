@@ -7,6 +7,12 @@ const ReviewSchema = new mongoose.Schema({
         ref: 'User',
         required: false
     },
+    userName:{       //adding a username field for ease of access when displaying reviews
+        type: String,
+        required: true,
+        unique: false,  //not unique for reviews
+        trim: true
+    },
     igdbId: {
         type: Number,
         required: true,

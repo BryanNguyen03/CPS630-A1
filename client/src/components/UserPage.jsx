@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import Review from './Review';
 
 const socketServerUrl = 'http://localhost:8080';
 
-const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, token }) => {
+const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, token, itemList = [] }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState(''); // State for search input

@@ -129,6 +129,7 @@ function App() {
               users={userList}
               onSelectedUserChange={setSelectedUser}
               token={token}
+              itemList={itemList}
             />
           }
         />
