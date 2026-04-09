@@ -115,9 +115,6 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
             <p>
               <strong>Username:</strong> {selectedUser.username}
             </p>
-            <p>
-              <strong>Favourite Game:</strong> {selectedUser.favouriteGame || 'Not provided'}
-            </p>
           </div>
         ) : (
           <p>No user selected yet.</p>

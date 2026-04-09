@@ -106,9 +106,9 @@ function App() {
 
         <Route path="/games" element={<GamesPage itemList={itemList} />} />
 
-        <Route 
-          path="/games/:id/reviews" 
-          element={<GameDetailsPage itemList={itemList} />} 
+        <Route
+          path="/games/:id"
+          element={<GameDetailsPage />}
         />
   
         <Route

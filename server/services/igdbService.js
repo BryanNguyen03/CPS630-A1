@@ -72,6 +72,57 @@ async function fetchAndCacheGames() {
     }
 }
 
+async function fetchAndCacheGameById(igdbId) {
+    try {
+        const token = await getTwitchAccessToken();
+        const clientId = process.env.IGDB_CLIENT_ID;
+
+        const query = `
+            fields id, name, summary, cover.url, rating, first_release_date;
+            where id = ${igdbId};
+        `;
+
+        const response = await fetch('https://api.igdb.com/v4/games', {
+            method: 'POST',
+            headers: {
+                'Client-ID': clientId,
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Content-Type': 'text/plain'
+            },
+            body: query
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch from IGDB: ${response.statusText}`);
+        }
+
+        const igdbGames = await response.json();
+        
+        if (igdbGames.length === 0) {
+            return null; // Game not found on IGDB
+        }
+
+        const game = igdbGames[0];
+        const newGame = new Game({
+            igdbId: game.id,
+            name: game.name,
+            summary: game.summary,
+            coverUrl: game.cover?.url ? game.cover.url.replace('t_thumb', 't_cover_big') : null,
+            rating: game.rating,
+            releaseDate: game.first_release_date ? new Date(game.first_release_date * 1000) : null
+        });
+
+        await newGame.save();
+        return newGame;
+
+    } catch (error) {
+        console.error(`Error fetching and caching game ${igdbId} from IGDB:`, error);
+        return null;
+    }
+}
+
 module.exports = {
-    fetchAndCacheGames
+    fetchAndCacheGames,
+    fetchAndCacheGameById
 };

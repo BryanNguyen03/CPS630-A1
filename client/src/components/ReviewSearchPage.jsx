@@ -47,10 +47,10 @@ function ReviewSearchPage({ itemList, onRefresh }) {
       {/* Div to display the items resulting from the GET multiple items request */}
       <div className="items-container">
         <h3>Search Results ({itemList.filter(item =>
-          item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
+          item.igdbId.toLowerCase().includes(searchTerm.toLowerCase())
         ).length})</h3>
         {itemList.filter(item =>
-          item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
+          item.igdbId.toLowerCase().includes(searchTerm.toLowerCase())
         ).length === 0 ? (
           <p className="no-items">
             {searchTerm ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
@@ -59,10 +59,10 @@ function ReviewSearchPage({ itemList, onRefresh }) {
           <ul>
             {/* Frontend dynamic search */}
             {itemList
-              .filter(item => item.gameName.toLowerCase().includes(searchTerm.toLowerCase()))   
+              .filter(item => item.igdbId && item.igdbId.toString().includes(searchTerm.toLowerCase()))   
               .map(item => (
                 <li key={item._id}>
-                  <span>{item.gameName} | {item.review} | Rating: {item.rating}/5</span>
+                  <span>{item.igdbId} | {item.review} | Rating: {item.rating}/5</span>
                   <span className="item-id">ID: {item._id}</span>
                 </li>
               ))}
@@ -109,7 +109,7 @@ function ReviewSearchPage({ itemList, onRefresh }) {
           <ul>
             {itemListSecond.map(item => (
                 <li key={item._id}>
-                  <span>{item.gameName} | {item.review} | Rating: {item.rating}/5</span>
+                  <span>{item.igdbId} | {item.review} | Rating: {item.rating}/5</span>
                   <span className="item-id">ID: {item._id}</span>
                 </li>
               ))}

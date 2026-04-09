@@ -53,42 +53,93 @@ db.on('open', function() {
 
 // Create reviews if they don't already exist in the database
 //simple list of reviews to demo the idea
-const { fetchAndCacheGames } = require('./services/igdbService');
+const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
 
 let reviews = [
-    { userId:'5', gameName:'League of Legends', review:"Ruined my life",   rating: 5},
-    { userId:'3', gameName:'FIFA 25', review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
-    { userId:'2', gameName:'Valorant', review:"Always rage, always come back", rating: 3},
-    { userId:'4', gameName:'Fortnite', review:"Too many Sweats", rating: 5},
-    { userId:'4', gameName:'Call of Duty', review:"Same game as last year", rating:2},
-    { userId:'2', gameName:'Minecraft', review:"Can't go wrong with Minecraft", rating:5}
+    { igdbId: 12345, review:"Ruined my life",   rating: 5},
+    { igdbId: 12345, review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
+    { igdbId: 69696, review:"Always rage, always come back", rating: 3},
+    { igdbId: 69696, review:"Too many Sweats", rating: 5},
+    { igdbId: 69696, review:"Same game as last year", rating:2},
+    { igdbId: 69696, review:"Can't go wrong with Minecraft", rating:5}
 ];
 
+let dummyUsers = [
+    { username: '123', password: '123' },
+    { username: 'abc', password: 'abc' }
+];
 
-// Test function that adds default reviews to the database if the database is empty
+// Test function that adds default users and reviews to the database if the database is empty
 // This function also creates the database (via the first input) if it isnt already there 
-async function addReviewsToMongoDB() {
-    const reviewCount = await Review.countDocuments();
+async function addDummyDataToMongoDB() {
+    try {
+        const userCount = await User.countDocuments();
+        let userIds = [];
 
-    if (reviewCount === 0) {
-        console.log('Adding test reviews to db ...');
+        if (userCount === 0) {
+            console.log('Adding test users to db ...');
+            for (const userData of dummyUsers) {
+                const hashedPassword = await bcrypt.hash(userData.password, 10);
+                const newUser = new User({ ...userData, password: hashedPassword });
+                await newUser.save();
+                userIds.push(newUser._id);
+                console.log('User added: ' + newUser.username);
+            }
+        } else {
+            console.log('Users already exist.');
+            const users = await User.find().limit(2);
+            userIds = users.map(u => u._id);
+        }
 
-        reviews.forEach(review => {
-            const newReview = new Review(review);
-            newReview.save()
-                .then(() => console.log('Review added with id: ' + newReview._id))
-                .catch(err => console.error('Error adding review with id' + newReview._id + ' ' + err));
-        })
+        const reviewCount = await Review.countDocuments();
+
+        if (reviewCount === 0 && userIds.length > 0) {
+            console.log('Adding test reviews to db ...');
+            
+            // Connect dummy reviews to dummy users alternating
+            reviews = reviews.map((review, index) => ({
+                ...review,
+                userId: userIds[index % userIds.length]
+            }));
+
+            for (const review of reviews) {
+                const newReview = new Review(review);
+                await newReview.save();
+                console.log('Review added with id: ' + newReview._id);
+            }
+        } else {
+            console.log('Reviews already exist, Not adding test reviews.');
+        }
+    } catch (err) {
+        console.error('Error adding test data: ' + err.message);
     }
-    else {
-        console.log('Reviews already exist, Not adding test reviews.');
-        return
-    }
-
 }
-addReviewsToMongoDB();
+addDummyDataToMongoDB();
 
 // Initialize the Game cache from IGDB
+
+let dummyGames = [
+    { igdbId: 69696, name: "FC 24", summary: "A great football game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co69sm.jpg", rating: 85, releaseDate: new Date() },
+    { igdbId: 12345, name: "Minecraft", summary: "Sandbox survival game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co69sp.jpg", rating: 90, releaseDate: new Date() }
+];
+
+async function addDummyGamesToMongoDB() {
+    const gameCount = await Game.countDocuments();
+
+    if (gameCount === 0) {
+        console.log('Adding test games to db ...');
+        for (const game of dummyGames) {
+            const newGame = new Game(game);
+            await newGame.save()
+                .then(() => console.log('Game added: ' + newGame.name))
+                .catch(err => console.error('Error adding test game: ' + err.message));
+        }
+    } else {
+        console.log('Games already exist, Not adding test games.');
+    }
+}
+addDummyGamesToMongoDB();
+
 fetchAndCacheGames();
 
 
@@ -141,7 +192,7 @@ app.get('/api/items/:reviewId', async (req, res) => {
 app.post('/api/items', async (req, res) => {
     const newReview = req.body;
 
-    if (newReview && newReview.gameName && newReview.review && newReview.rating) {
+    if (newReview && newReview.igdbId !== undefined && newReview.review && newReview.rating) {
         const review = new Review(newReview);
 
         review.save()
@@ -161,16 +212,16 @@ app.post('/api/items', async (req, res) => {
 
 
 //route to update reviews based on the game name, user input also determines the updates (UPDATE), UPDATE an item 
-app.patch('/api/items/:gameName', async (req, res) => {
+app.patch('/api/items/:igdbId', async (req, res) => {
 
     try {
-        const { gameName } = req.params;
+        const { igdbId } = req.params;
         const { review, rating } = req.body;
 
         if (!review && !rating) {
             return res.status(400).json({ error: "Review text or rating required" });
         }
-        const updatedReviewData = await Review.findOneAndUpdate({ gameName: gameName }, { review: review, rating: rating }, { new: true });
+        const updatedReviewData = await Review.findOneAndUpdate({ igdbId: Number(igdbId) }, { review: review, rating: rating }, { new: true });
         
         
         if (updatedReviewData) {
@@ -182,7 +233,7 @@ app.patch('/api/items/:gameName', async (req, res) => {
         }
     }
     catch (err) {
-        console.error('Error updating review with game name ' + gameName + ' ' + err);
+        console.error('Error updating review with game name ' + igdbId + ' ' + err);
         res.status(500).json({ error: "Failed to update review" });
     }
 });
@@ -215,6 +266,38 @@ app.get('/api/games', async (req, res) => {
     }
 });
 
+//route to get all reviews for a specific game (GET)
+app.get('/api/games/:id/reviews', async (req, res) => {
+    try {
+        const igdbId = parseInt(req.params.id, 10);
+        if (Number.isNaN(igdbId)) {
+            return res.status(400).json({ error: 'Invalid game id' });
+        }
+
+        const reviewsForGame = await Review.find({ igdbId }).sort({ _id: -1 });
+        res.status(200).json(reviewsForGame);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.toString() });
+    }
+});
+
+app.get('/api/games/:id', async (req, res) => {
+    try {
+        let game = await Game.findOne({ igdbId: parseInt(req.params.id) });
+        if (!game) {
+            game = await fetchAndCacheGameById(parseInt(req.params.id));
+            if (!game) {
+                return res.status(404).json({ error: "Game not found" });
+            }
+        }
+        res.status(200).json(game);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.toString() });
+    }
+});
+
 
 
 
@@ -226,7 +309,7 @@ app.get('/api/games', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
     try {
-        const users = await User.find({}, 'username favouriteGame');
+        const users = await User.find({}, 'username');
         res.status(200).json(users);
     } catch (err) {
         console.error('Error fetching users', err);

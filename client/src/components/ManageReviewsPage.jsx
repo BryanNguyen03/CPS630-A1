@@ -3,17 +3,17 @@ import { useState } from 'react';
 
 function ManageReviewsPage({ itemList, onRefresh }) {
   //user input useState variables
-  const [newReviewGameName, setNewReviewGameName] = useState('');
+  const [newReviewIgdbId, setNewReviewIgdbId] = useState('');
   const [newReviewRating, setNewReviewRating] = useState('');
   const [newReviewText, setNewReviewText] = useState('');
 
-  const [updatedReviewGameName, setUpdatedReviewGameName] = useState('');
+  const [updatedReviewIgdbId, setUpdatedReviewIgdbId] = useState('');
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
 
   // CREATE an item via POST request
   const addItem = async () => {
-    if (!newReviewGameName.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
+    if (!newReviewIgdbId.trim() || !newReviewText.trim() || !newReviewRating.trim()) {
       alert('Please enter all review fields');
       return;
     }
@@ -24,10 +24,10 @@ function ManageReviewsPage({ itemList, onRefresh }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ gameName: newReviewGameName, review: newReviewText, rating: newReviewRating })
+        body: JSON.stringify({ igdbId: newReviewIgdbId, review: newReviewText, rating: newReviewRating })
       });
       if (response.ok) {
-        setNewReviewGameName('');
+        setNewReviewIgdbId('');
         setNewReviewText('');
         setNewReviewRating('');
         onRefresh();
@@ -54,9 +54,9 @@ function ManageReviewsPage({ itemList, onRefresh }) {
   };
 
   // UPDATE an item via PUT request
-  const updateItem = async (gameName) => {
+  const updateItem = async (igdbId) => {
     try {
-      if (!updatedReview.trim() || !updatedRating.trim() || !updatedReviewGameName.trim()) {
+      if (!updatedReview.trim() || !updatedRating.trim() || !updatedReviewIgdbId.trim()) {
         alert('Please enter the updated review text, rating, and game name');
         return;
       }
@@ -66,7 +66,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/items/${gameName}`, {
+      const response = await fetch(`http://localhost:8080/api/items/${igdbId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -79,7 +79,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
         // clear the update input fields after successful update
         setUpdatedReview('');
         setUpdatedRating('');
-        setUpdatedReviewGameName('');
+        setUpdatedReviewIgdbId('');
         onRefresh();
       }
       else {
@@ -101,8 +101,8 @@ function ManageReviewsPage({ itemList, onRefresh }) {
       <div className="input-section">
         <input
           type="text"
-          value={newReviewGameName}
-          onChange={(e) => setNewReviewGameName(e.target.value)}
+          value={newReviewIgdbId}
+          onChange={(e) => setNewReviewIgdbId(e.target.value)}
           placeholder="Enter game name"
         />
         <input
@@ -129,7 +129,7 @@ function ManageReviewsPage({ itemList, onRefresh }) {
           <ul>
             {itemList.map(item => (
               <li key={item._id}>
-                <span>{item.gameName} | {item.review} | Rating: {item.rating}/5</span>
+                <span>{item.igdbId} | {item.review} | Rating: {item.rating}/5</span>
                 <button onClick={() => deleteItem(item._id)}>Delete (DELETE)</button>
               </li>
             ))}
@@ -138,10 +138,10 @@ function ManageReviewsPage({ itemList, onRefresh }) {
 
         {/* User input for updating an existing review */}
         <div className="input-section">
-          <input type="text" placeholder="Game to update" value={updatedReviewGameName} onChange={(e) => setUpdatedReviewGameName(e.target.value)} />
+          <input type="text" placeholder="Game to update" value={updatedReviewIgdbId} onChange={(e) => setUpdatedReviewIgdbId(e.target.value)} />
           <input type="text" placeholder="Updated review" value={updatedReview} onChange={(e) => setUpdatedReview(e.target.value)} />
           <input type="number" placeholder="Updated Rating" value={updatedRating} onChange={(e) => setUpdatedRating(e.target.value)} />
-          <button onClick={() => updateItem(updatedReviewGameName)}>Update Review (PUT)</button>
+          <button onClick={() => updateItem(updatedReviewIgdbId)}>Update Review (PUT)</button>
         </div>
       </div>
     </div>

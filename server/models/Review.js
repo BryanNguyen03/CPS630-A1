@@ -3,15 +3,14 @@ const mongoose = require('mongoose');
 const ReviewSchema = new mongoose.Schema({
     // using the unique mongo database ID of the user instance for the userID
     userId: {
-        type: Number,
-        unique: false,
-        required: false,
-        min: 0
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
     },
-    gameName: {
-        type: String,
-        unique: false,
-        required: true
+    igdbId: {
+        type: Number,
+        required: true,
+        unique: false
     },
     review: {
         type: String,

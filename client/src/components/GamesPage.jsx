@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function GamesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,7 +38,8 @@ function GamesPage() {
           <p className="no-items">No games found matching "{searchTerm}"</p>
         ) : (
           filteredGames.map((item) => (
-            <div key={item._id} className="game-card">
+            <Link to={`/games/${item.igdbId}`} key={item._id} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div className="game-card">
               {item.coverUrl && (
                 <img 
                   src={item.coverUrl} 
@@ -64,6 +66,7 @@ function GamesPage() {
                 <small>Released: {item.releaseDate ? new Date(item.releaseDate).toLocaleDateString() : 'Unknown'}</small>
               </div>
             </div>
+            </Link>
           ))
         )}
       </div>

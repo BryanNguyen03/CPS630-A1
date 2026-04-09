@@ -88,6 +88,7 @@ The client will run on **http://localhost:5173**
 - POST `/api/items` Create a new review
 - PATCH `/api/items/:gameName` Update a review by game name
 - DELETE `/api/items/:id` Delete a review by ID
+- GET `/api/games/:id/reviews` Retrieve reviews for a specific game only
 
 ## Review Schema
 
