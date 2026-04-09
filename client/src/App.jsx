@@ -109,7 +109,7 @@ function App() {
 
         <Route
           path="/games/:id"
-          element={<GameDetailsPage />}
+          element={<GameDetailsPage token={token} currentUser={currentUser} />}
         />
   
         <Route

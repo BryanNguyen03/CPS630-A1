@@ -206,24 +206,29 @@ app.get('/api/items/:reviewId', async (req, res) => {
 
 
 //route to add a new user entered review into the database (POST), CREATE an item
-app.post('/api/items', async (req, res) => {
-    const newReview = req.body;
+app.post('/api/items', authenticateToken, async (req, res) => {
+    const { igdbId, gameName, review, rating } = req.body;
 
-    if (newReview && newReview.igdbId !== undefined && newReview.gameName && newReview.review && newReview.rating) {
-        const review = new Review(newReview);
-
-        review.save()
-            .then(() => {
-                console.log('Review added with id: ' + review._id);              
-                res.status(201).json(review);
-            })
-            .catch(err => {
-                console.error('Error adding review with id' + review._id + ' ' + err);
-                res.status(500).json({ error: 'Failed to add review' });
-            });
-    }
-    else {
+    if (igdbId === undefined || !gameName || !review || !rating) {
         return res.status(400).json({ error: "Invalid review data" });
+    }
+
+    try {
+        const newReview = new Review({
+            igdbId,
+            gameName,
+            review,
+            rating,
+            userId: req.user.id,       // from JWT
+            userName: req.user.username // from JWT — never trust the client for this
+        });
+
+        await newReview.save();
+        console.log('Review added with id: ' + newReview._id);
+        res.status(201).json(newReview);
+    } catch (err) {
+        console.error('Error adding review:', err);
+        res.status(500).json({ error: 'Failed to add review' });
     }
 });
 
@@ -372,6 +377,20 @@ app.get('/api/messages', async (req, res) => {
 
 
 // ############ user auth routes ############
+// middle ware function to authenticate the JSON web token that is sent in the header of requests that require authentication,
+// such as posting a review, this is used to verify the user and associate the review with the user
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // "Bearer <token>"
+
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: 'Invalid token' });
+        req.user = user; // { id, username }
+        next();
+    });
+}
 
 //route for user registration
 app.post('/api/register', async (req, res) => {
