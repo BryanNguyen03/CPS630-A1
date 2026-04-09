@@ -5,10 +5,9 @@ function ReviewSearchPage({ itemList, onRefresh }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchTermId, setSearchTermId] = useState('');
-  const [searchedReviewId, setSearchedReviewId] = useState(0); //variable to accurately detect user input and provide appopriate UI responses
-  const [itemListSecond, setItemListSecond] = useState([]); //variable to keep the response from the GET an item request
+  const [searchedReviewId, setSearchedReviewId] = useState(0);
+  const [itemListSecond, setItemListSecond] = useState([]);
 
-  // READ items via GET an item request
   const fetchItemsByReviewId = async (id) => {
     setItemListSecond([]);
 
@@ -26,14 +25,11 @@ function ReviewSearchPage({ itemList, onRefresh }) {
     }
   };
 
-
-  // Page consists of two sets of a search and a output list
   return (
     <div className="page">
       <h2>Review Search by Game</h2>
       <p>Search for reviews using the GET multiple items request</p>
 
-      {/* User input for the search by Game, GET multiple items request */}
       <div className="input-section">
         <input
           type="text"
@@ -43,8 +39,7 @@ function ReviewSearchPage({ itemList, onRefresh }) {
         />
         <button onClick={() => onRefresh()}>Search (GET)</button>
       </div>
-      
-      {/* Div to display the items resulting from the GET multiple items request */}
+
       <div className="items-container">
         <h3>Search Results ({itemList.filter(item =>
           item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -56,21 +51,29 @@ function ReviewSearchPage({ itemList, onRefresh }) {
             {searchTerm ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
           </p>
         ) : (
-          <ul>
-            {/* Frontend dynamic search */}
+          <div className="reviews-list">
             {itemList
-              .filter(item => item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase()))   
+              .filter(item => item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase()))
               .map(item => (
-                <li key={item._id}>
-                  <span>{item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5</span>
-                  <span className="item-id">ID: {item._id}</span>
-                </li>
+                <div key={item._id} className="game-card" style={{ marginBottom: '15px' }}>
+                  <div className="game-header">
+                    <strong>{item.gameName}</strong>
+                    <span className={`rating-badge rate-${item.rating}`}>
+                      {item.rating}/5
+                    </span>
+                  </div>
+                  <div className="game-body">
+                    <p>"{item.review}"</p>
+                    <small style={{ color: 'var(--color-text-secondary)' }}>
+                      Review ID: {item._id}
+                    </small>
+                  </div>
+                </div>
               ))}
-          </ul>
+          </div>
         )}
       </div>
 
-      {/* Review search by reviewId, this showcases the GET an item request */}
       <h2>Review Search by ID</h2>
       <p>Search for reviews using the GET an item request</p>
       <div className="input-section">
@@ -79,7 +82,7 @@ function ReviewSearchPage({ itemList, onRefresh }) {
           value={searchTermId}
           onChange={(e) => {
             setSearchTermId(e.target.value);
-            if(e.target.value.trim() === ""){
+            if (e.target.value.trim() === '') {
               setSearchedReviewId(0);
             }
           }}
@@ -87,10 +90,10 @@ function ReviewSearchPage({ itemList, onRefresh }) {
         />
         <button
           onClick={() => {
-            if(!searchTermId.trim()){
+            if (!searchTermId.trim()) {
               setItemListSecond([]);
               return;
-            };
+            }
             fetchItemsByReviewId(searchTermId.toLowerCase());
           }}
         >
@@ -98,22 +101,31 @@ function ReviewSearchPage({ itemList, onRefresh }) {
         </button>
       </div>
 
-      {/* Review display for the returned search result of the search by reviewId*/}
       <div className="items-container">
         <h3>Search Results</h3>
         {itemListSecond.length === 0 ? (
           <p className="no-items">
-            {searchedReviewId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'} {/*Dynamic UI responses in the text based on user input and search return*/}
+            {searchedReviewId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
           </p>
         ) : (
-          <ul>
+          <div className="reviews-list">
             {itemListSecond.map(item => (
-                <li key={item._id}>
-                  <span>{item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5</span>
-                  <span className="item-id">ID: {item._id}</span>
-                </li>
-              ))}
-          </ul>
+              <div key={item._id} className="game-card" style={{ marginBottom: '15px' }}>
+                <div className="game-header">
+                  <strong>{item.gameName}</strong>
+                  <span className={`rating-badge rate-${item.rating}`}>
+                    {item.rating}/5
+                  </span>
+                </div>
+                <div className="game-body">
+                  <p>"{item.review}"</p>
+                  <small style={{ color: 'var(--color-text-secondary)' }}>
+                    Review ID: {item._id}
+                  </small>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

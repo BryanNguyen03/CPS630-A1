@@ -89,54 +89,62 @@ function Profile() {
       <h2>My Reviews</h2>
       <p>View and manage your reviews</p>
 
-      <div className="items-container">
-        <h3>Reviews ({itemList.length})</h3>
+      <div className="reviews-list">
         {itemList.length === 0 ? (
           <p className="no-items">You haven't written any reviews yet.</p>
         ) : (
-          <ul>
-            {itemList.map(item => (
-              <li key={item._id}>
-                <span>
-                  {item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5
+          itemList.map(item => (
+            <div key={item._id} className="game-card" style={{ marginBottom: '15px' }}>
+              <div className="game-header">
+                <strong>{item.gameName}</strong>
+                <span className={`rating-badge rate-${item.rating}`}>
+                  {item.rating}/5
                 </span>
-                <button onClick={() => deleteItem(item._id)}>Delete</button>
-              </li>
-            ))}
-          </ul>
+              </div>
+              <div className="game-body">
+                <p>"{item.review}"</p>
+              </div>
+              <button
+                onClick={() => deleteItem(item._id)}
+                style={{ marginTop: '8px' }}
+              >
+                Delete
+              </button>
+            </div>
+          ))
         )}
 
         {itemList.length > 0 && (
-          <div className="input-section">
-            <h4>Update a Review</h4>
-            <select
-              value={selectedReviewId}
-              onChange={(e) => setSelectedReviewId(e.target.value)}
-            >
-              <option value="">-- Select a review to update --</option>
-              {itemList.map(item => (
-                <option key={item._id} value={item._id}>
-                  {item.gameName} — "{item.review.slice(0, 40)}{item.review.length > 40 ? '...' : ''}"
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Updated review text"
-              value={updatedReview}
-              onChange={(e) => setUpdatedReview(e.target.value)}
-            />
-            <input
-              type="number"
-              placeholder="Updated Rating (1-5)"
-              min={1}
-              max={5}
-              value={updatedRating}
-              onChange={(e) => setUpdatedRating(e.target.value)}
-            />
-            <button onClick={updateItem}>Update Review</button>
-          </div>
-        )}
+            <div className="input-section">
+              <h4>Update a Review</h4>
+              <select
+                value={selectedReviewId}
+                onChange={(e) => setSelectedReviewId(e.target.value)}
+              >
+                <option value="">-- Select a review to update --</option>
+                {itemList.map(item => (
+                  <option key={item._id} value={item._id}>
+                    {item.gameName} — "{item.review.slice(0, 40)}{item.review.length > 40 ? '...' : ''}"
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Updated review text"
+                value={updatedReview}
+                onChange={(e) => setUpdatedReview(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Updated Rating (1-5)"
+                min={1}
+                max={5}
+                value={updatedRating}
+                onChange={(e) => setUpdatedRating(e.target.value)}
+              />
+              <button onClick={updateItem}>Update Review</button>
+            </div>
+          )}
       </div>
     </div>
   );
