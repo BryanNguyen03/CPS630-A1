@@ -68,8 +68,9 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
     const nextUsername = event.target.value;
     const nextUser = users.find((user) => user.username === nextUsername);
     if (nextUser) {
-      onSelectedUserChange(nextUser);
-    }
+      console.log(nextUser)
+      onSelectedUserChange(nextUser);                      //print value of nextUser, to see if its the userobject or id or something else
+    }                                                           //this uses the props function/set usestate for the selectedUser from app.jsx
   };
 
   const sendMessage = () => {
@@ -119,9 +120,14 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
             <div className="user-reviews" style={{ border: '1px solid #ddd', padding: '15px', marginTop: '15px' }}>
               <h4>{selectedUser.username}'s Reviews</h4>
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {itemList.filter(item => item.userId === selectedUser._id).map((review) => (
-                  <Review key={review._id || review.igdbId + Math.random()} review={review} />
+                {/* WILL NEED TO PRINT OUT BELOW AND SEE OUTPUT FOR ITEM AND SELECTED USER------------------FIRST RUN IT--------------------------- */}
+                {itemList.filter(item => item.userId === selectedUser._id).map((review) => (             
+                  
+                  // maybe can remove the rest of this, and just keep review._id since that will be unique always
+                  <Review key={review._id || review.igdbId + Math.random()} review={review} />           
                 ))}
+
+                {/* If there is no reviews by the user, then showing placeholder text indicating this*/}
                 {itemList.filter(item => item.userId === selectedUser._id).length === 0 && (
                   <p>This user has no reviews.</p>
                 )}

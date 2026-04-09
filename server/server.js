@@ -1,19 +1,22 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const path = require('path');
-const http = require('http');
-const { Server } = require('socket.io');
-const Review = require('./models/Review');
-const User = require('./models/User');
-const Game = require('./models/Game');
-const Message = require('./models/Message');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const express = require('express'); //express import
+const cors = require('cors'); //CORS security
+const path = require('path'); //path functionality
+const http = require('http'); //http server
+const { Server } = require('socket.io'); //Server listener, for both socketio and express
+const Review = require('./models/Review'); //Review model for storing reviews and associating them to users and games
+const User = require('./models/User'); //User model for user info
+const Game = require('./models/Game'); //Game model for game data
+const Message = require('./models/Message'); //Message model for storing messages
+const bcrypt = require('bcrypt'); //encryption of passwords
+const jwt = require('jsonwebtoken');  //authentication
 
 
 //server port
 const PORT = 8080;
+
+
+//setting up the express object/app
+const app = express(); 
 
 
 //setting up CORS and Express
@@ -51,23 +54,26 @@ db.on('open', function() {
 });
 
 
-// Create reviews if they don't already exist in the database
-//simple list of reviews to demo the idea
-const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
-
-let reviews = [
-    { igdbId: 12345, gameName: "Apex Legends", review:"Ruined my life",   rating: 5, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
-    { igdbId: 12345, gameName: "Apex Legends", review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
-    { igdbId: 69696, gameName: "Minecraft", review:"Always rage, always come back", rating: 3, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
-    { igdbId: 69696, gameName: "Minecraft", review:"Too many Sweats", rating: 5, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
-    { igdbId: 69696, gameName: "Minecraft", review:"Same game as last year", rating:2, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
-    { igdbId: 69696, gameName: "Minecraft", review:"Can't go wrong with Minecraft", rating:5, userId: new mongoose.Types.ObjectId('69d6fc1e27b8015128821918')}
-];
-
+//creating test users for the site, this is before they are entered into the database
 let dummyUsers = [
     { username: '123', password: '123' },
     { username: 'abc', password: 'abc' }
 ];
+
+
+// Create reviews if they don't already exist in the database
+//simple list of reviews to demo the idea
+const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
+
+let reviews = [                                                                                   //remove the object ID here and just use username since we dont have these IDs on a fresh run
+    { igdbId: 12345, gameName: "Apex Legends", review:"Ruined my life",   rating: 5},
+    { igdbId: 12345, gameName: "Apex Legends", review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
+    { igdbId: 69696, gameName: "Minecraft", review:"Always rage, always come back", rating: 3},
+    { igdbId: 69696, gameName: "Minecraft", review:"Too many Sweats", rating: 5},
+    { igdbId: 69696, gameName: "Minecraft", review:"Same game as last year", rating:2},
+    { igdbId: 69696, gameName: "Minecraft", review:"Can't go wrong with Minecraft", rating:5}
+];                                  
+
 
 // Test function that adds default users and reviews to the database if the database is empty
 // This function also creates the database (via the first input) if it isnt already there 
@@ -75,6 +81,7 @@ async function addDummyDataToMongoDB() {
     try {
         const userCount = await User.countDocuments();
         let userIds = [];
+        let userNameStrings = [];
 
         if (userCount === 0) {
             console.log('Adding test users to db ...');
@@ -82,7 +89,11 @@ async function addDummyDataToMongoDB() {
                 const hashedPassword = await bcrypt.hash(userData.password, 10);
                 const newUser = new User({ ...userData, password: hashedPassword });
                 await newUser.save();
+                //saving the mongo document IDs for each user added, this is used for adding the reviews after this
                 userIds.push(newUser._id);
+                //saving the usernames, also to be added to the review, for ease of access to the username in the review components
+                userNameStrings.push(newUser.username); 
+                //console message
                 console.log('User added: ' + newUser.username);
             }
         } else {
@@ -91,22 +102,28 @@ async function addDummyDataToMongoDB() {
             userIds = users.map(u => u._id);
         }
 
+
+        //adding dummy reviews only if there is none in the DB
         const reviewCount = await Review.countDocuments();
 
-        if (reviewCount === 0 && userIds.length > 0) {
+        if (reviewCount === 0 && userIds.length > 0) { //making sure that there is users
             console.log('Adding test reviews to db ...');
             
-            // Connect dummy reviews to dummy users alternating
+            //connecting the dummy reviews to alternating dummy users in the dictionary
             reviews = reviews.map((review, index) => ({
+                //getting all the fields from the dummy review, then adding a mongo document userID
                 ...review,
-                userId: userIds[index % userIds.length]
+                userId: userIds[index % userIds.length],  //alternating by amount of users
+                userName: userNameStrings[index % userNameStrings.length]  //alternating by amount of users
             }));
 
+            //creating the actual mongodb documents for the reviews
             for (const review of reviews) {
                 const newReview = new Review(review);
                 await newReview.save();
                 console.log('Review added with id: ' + newReview._id);
             }
+        //if there are already reviews in the DB then not adding any
         } else {
             console.log('Reviews already exist, Not adding test reviews.');
         }
@@ -315,7 +332,7 @@ app.get('/api/games/:id', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
     try {
-        const users = await User.find({}, 'username');
+        const users = await User.find({}, 'username');       //will need to figure out what this reutrns ---
         res.status(200).json(users);
     } catch (err) {
         console.error('Error fetching users', err);
@@ -377,6 +394,9 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+
+
+
 //route for user login
 app.post('/api/login', async (req, res) => {
     try {
@@ -404,7 +424,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 
-
+//Socket io code dealing with the socket creation, receiving and sending messages, and closing sockets
 io.on('connection', (socket) => {
     console.log('Socket connected:', socket.id);
 
