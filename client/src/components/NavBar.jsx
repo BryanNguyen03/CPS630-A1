@@ -14,16 +14,21 @@ function NavBar({ token, onLogout, currentUser }) {
 
   return (
     <div className="navigation">
-      <button
+
+
+      {token && (
+        <button
+          className={isActive('/MyProfile') ? 'active' : ''}
+          onClick={() => navigate('/MyProfile')}
+        >
+          My Profile
+        </button>
+      )}
+
+    
+    <button
         className={isActive('/') ? 'active' : ''}
         onClick={() => navigate('/')}
-      >
-        Review Manager
-      </button>
-
-    <button
-        className={isActive('/games') ? 'active' : ''}
-        onClick={() => navigate('/games')}
       >
         Games
       </button>

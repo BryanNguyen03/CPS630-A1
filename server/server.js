@@ -172,6 +172,46 @@ app.get('/api/items', async (req, res) => {
     }
 });
 
+// Route to get items for a specific user
+app.get('/api/items/user/:userId', authenticateToken, async (req, res) => {
+    try {
+        const reviews = await Review.find({ userId: req.params.userId }).sort({ _id: -1 });
+        res.status(200).json(reviews);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch user reviews' });
+    }
+});
+
+// route to update reviews based on the review ID
+app.patch('/api/items/review/:id', authenticateToken, async (req, res) => {
+    try {
+        const { review, rating } = req.body;
+
+        if (!review && !rating) {
+            return res.status(400).json({ error: "Review text or rating required" });
+        }
+
+        let updateFields = {};
+        if (review) updateFields.review = review;
+        if (rating) updateFields.rating = rating;
+
+        const updatedReview = await Review.findOneAndUpdate(
+            { _id: req.params.id, userId: req.user.id },  // ownership check
+            updateFields,
+            { new: true }
+        );
+
+        if (!updatedReview) {
+            return res.status(404).json({ error: "Review not found or unauthorized" });
+        }
+
+        res.status(200).json(updatedReview);
+    } catch (err) {
+        console.error('Error updating review:', err);
+        res.status(500).json({ error: "Failed to update review" });
+    }
+});
 
 //route to search reviews based on the review ID that the user inputted (READ), READ an item
 app.get('/api/items/:reviewId', async (req, res) => {
@@ -268,17 +308,20 @@ app.patch('/api/items/:igdbId', async (req, res) => {
 
 
 //route to delete a review, which is determeined by the id given in the request (DELETE), DELETE an item
-app.delete('/api/items/:id', async (req, res) => {
+// Secured Delete
+app.delete('/api/items/:id', authenticateToken, async (req, res) => {
     try {
-        const reviewId = req.params.id;
-        const deletedReview = await Review.findOneAndDelete({ _id: reviewId });
+        const deletedReview = await Review.findOneAndDelete({ 
+            _id: req.params.id, 
+            userId: req.user.id  // Only delete if it belongs to the user
+        });
+        
         if (deletedReview) {
-            res.status(200).json({ message: "Review deleted successfully" });
+            res.status(200).json({ message: "Review deleted" });
         } else {
-            res.status(404).json({ error: "Review not found" });
+            res.status(404).json({ error: "Review not found or unauthorized" });
         }
     } catch (err) {
-        console.error('Error deleting review with id ' + reviewId + ' ' + err);
         res.status(500).json({ error: "Failed to delete review" });
     }
 });

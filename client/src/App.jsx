@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import NavBar from './components/NavBar'
-import ManageReviewsPage from './components/ManageReviewsPage'
+import Profile from './components/Profile'
 import ReviewSearchPage from './components/ReviewSearchPage'
 import AboutPage from './components/AboutPage'
 import RegisterPage from './components/RegisterPage'
@@ -89,10 +89,10 @@ function App() {
       />
       <Routes>
         <Route
-          path="/"
+          path="/MyProfile"
           element={
             <ProtectedRoute token={token}>
-              <ManageReviewsPage itemList={itemList} onRefresh={fetchItems} />
+              <Profile />
             </ProtectedRoute>
           }
         />
@@ -105,7 +105,7 @@ function App() {
           element={<AboutPage />}
         />
 
-        <Route path="/games" element={<GamesPage itemList={itemList} />} />
+        <Route path="/" element={<GamesPage itemList={itemList} />} />
 
         <Route
           path="/games/:id"
