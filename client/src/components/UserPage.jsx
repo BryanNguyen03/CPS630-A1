@@ -87,7 +87,6 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
       socketRef.current.emit('chatMessage', messagePayload);
     }
 
-    setMessages((prev) => [...prev, messagePayload]);
     setNewMessage('');
   };
 
