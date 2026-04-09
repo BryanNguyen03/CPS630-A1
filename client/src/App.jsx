@@ -85,6 +85,7 @@ function App() {
       <NavBar
         token={token}
         onLogout={handleLogout}
+        currentUser={currentUser}
       />
       <Routes>
         <Route

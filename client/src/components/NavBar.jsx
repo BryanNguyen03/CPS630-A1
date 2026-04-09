@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 
 // Simple navigation bar for the webpage, allows routing to the three pages/views
-function NavBar({ token, onLogout }) {
+function NavBar({ token, onLogout, currentUser }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,13 +48,18 @@ function NavBar({ token, onLogout }) {
       </button>
 
       {token ? (
-        <button
-          className="logout-btn"
-          onClick={handleLogout}
-          style={{ backgroundColor: '#ff4444', color: 'white' }}
-        >
-          Logout
-        </button>
+        <>
+          <span className='nav-user' style={{ color: 'white', padding: '0 10px' }}>
+            Hi, {currentUser?.username}
+          </span>
+          <button
+            className="logout-btn"
+            onClick={handleLogout}
+            style={{ backgroundColor: '#ff4444', color: 'white' }}
+          >
+            Logout
+          </button>
+        </>
       ) : (
         <>
           <button

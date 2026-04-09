@@ -6,7 +6,14 @@ const socketServerUrl = 'http://localhost:8080';
 const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, token }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); // State for search input
   const socketRef = useRef(null);
+
+  // Filter users based on search term (excluding the current user)
+  const filteredUsers = users.filter((user) =>
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    user.username !== currentUser?.username
+  );
 
   useEffect(() => {
     if (!token) {
@@ -63,14 +70,6 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
     }
   }, [currentUser?.username, selectedUser]);
 
-  const handleUserChange = (event) => {
-    const nextUsername = event.target.value;
-    const nextUser = users.find((user) => user.username === nextUsername);
-    if (nextUser) {
-      onSelectedUserChange(nextUser);
-    }
-  };
-
   const sendMessage = () => {
     if (!newMessage.trim() || !currentUser?.username || !selectedUser?.username) {
       return;
@@ -87,6 +86,7 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
       socketRef.current.emit('chatMessage', messagePayload);
     }
 
+    //setMessages((prev) => [...prev, messagePayload]); // Optimistic update
     setNewMessage('');
   };
 
@@ -95,43 +95,65 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
       <h2>User Details</h2>
       <h3>Welcome, {currentUser?.username}</h3>
 
-      <div className="user-info">
-        <label htmlFor="selected-user">
-          Choose user:
-          <select id="selected-user" value={selectedUser?.username || ''} onChange={handleUserChange}>
-            <option value="" disabled>
-              Select a user
-            </option>
-            {users.map((user) => (
-              <option key={user.username} value={user.username}>
-                {user.username}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="user-selection-section">
+        <h3>Find a User</h3>
+        <div className="search-container">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by username..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-        {selectedUser ? (
-          <div>
-            <p>
-              <strong>Username:</strong> {selectedUser.username}
-            </p>
+        <div className="search-results">
+          {searchTerm && filteredUsers.length > 0 ? (
+            <ul className="user-list">
+              {filteredUsers.map((user) => (
+                <li 
+                  key={user.username} 
+                  className={`user-item ${selectedUser?.username === user.username ? 'active-user' : ''}`}
+                  onClick={() => {
+                    onSelectedUserChange(user);
+                    setSearchTerm(''); // Clear search after selection
+                  }}
+                >
+                  {user.username}
+                </li>
+              ))}
+            </ul>
+          ) : searchTerm && (
+            <p className="no-items">No users found matching "{searchTerm}"</p>
+          )}
+        </div>
+
+        {selectedUser && (
+          <div className="active-chat-indicator">
+            <p>Chatting with: <strong>{selectedUser.username}</strong></p>
           </div>
-        ) : (
-          <p>No user selected yet.</p>
         )}
       </div>
 
-      <div className="chat-box">
-        <h3>Chat with {selectedUser?.username || '...'}</h3>
-        {!token && <p>Please log in to send and receive chat messages.</p>}
-
-        <div className="message-list" style={{ border: '1px solid #ccc', padding: '12px', minHeight: '180px', marginBottom: '12px' }}>
+      <div className="chat-box" style={{ marginTop: '2rem' }}>
+        <div className="message-list" style={{ border: '1px solid #ccc', padding: '12px', minHeight: '300px', marginBottom: '12px', borderRadius: '8px', overflowY: 'auto' }}>
           {messages.length === 0 ? (
-            <p>No messages yet.</p>
+            <p className="no-items">No messages yet.</p>
           ) : (
             messages.map((message, index) => (
-              <div key={index} style={{ marginBottom: '8px' }}>
-                <strong>{message.from}:</strong> {message.text}
+              <div key={index} style={{ 
+                marginBottom: '8px', 
+                textAlign: message.from === currentUser?.username ? 'right' : 'left' 
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '8px 12px',
+                  borderRadius: '12px',
+                  backgroundColor: message.from === currentUser?.username ? '#646cff' : 'rgba(255,255,255,0.1)',
+                  color: message.from === currentUser?.username ? 'white' : 'inherit'
+                }}>
+                  <strong>{message.from === currentUser?.username ? 'You' : message.from}:</strong> {message.text}
+                </div>
               </div>
             ))
           )}
@@ -142,9 +164,8 @@ const UserPage = ({ currentUser, selectedUser, users, onSelectedUserChange, toke
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={selectedUser ? 'Type a message...' : 'Select a user first'}
+            placeholder={selectedUser ? 'Type a message...' : 'Select a user to start chatting'}
             disabled={!selectedUser || !token}
-            style={{ width: '70%', marginRight: '8px' }}
           />
           <button onClick={sendMessage} disabled={!newMessage.trim() || !selectedUser || !token}>
             Send

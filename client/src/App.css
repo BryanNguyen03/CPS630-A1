@@ -383,3 +383,46 @@ section li {
   font-size: 1.2rem;
   color: #646cff; /* Primary theme color */
 }
+
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.user-item {
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-item:hover {
+  background: rgba(100, 108, 255, 0.2);
+}
+
+.user-item.active-user {
+  border-left: 4px solid #646cff;
+  background: rgba(100, 108, 255, 0.1);
+}
+
+.active-chat-indicator {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(100, 108, 255, 0.1);
+  border-radius: 8px;
+  display: inline-block;
+}
+
+@media (prefers-color-scheme: light) {
+  .user-list {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  .user-item:hover {
+    background: #f0f0f0;
+  }
+}
