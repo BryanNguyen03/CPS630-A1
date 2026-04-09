@@ -56,12 +56,12 @@ db.on('open', function() {
 const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
 
 let reviews = [
-    { igdbId: 12345, gameName: "Apex Legends", review:"Ruined my life",   rating: 5},
-    { igdbId: 12345, gameName: "Apex Legends", review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
-    { igdbId: 69696, gameName: "Minecraft", review:"Always rage, always come back", rating: 3},
-    { igdbId: 69696, gameName: "Minecraft", review:"Too many Sweats", rating: 5},
-    { igdbId: 69696, gameName: "Minecraft", review:"Same game as last year", rating:2},
-    { igdbId: 69696, gameName: "Minecraft", review:"Can't go wrong with Minecraft", rating:5}
+    { igdbId: 12345, gameName: "Apex Legends", review:"Ruined my life",   rating: 5, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
+    { igdbId: 12345, gameName: "Apex Legends", review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
+    { igdbId: 69696, gameName: "Minecraft", review:"Always rage, always come back", rating: 3, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
+    { igdbId: 69696, gameName: "Minecraft", review:"Too many Sweats", rating: 5, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
+    { igdbId: 69696, gameName: "Minecraft", review:"Same game as last year", rating:2, userId: new mongoose.Types.ObjectId('69d6fc1827b8015128821916')},
+    { igdbId: 69696, gameName: "Minecraft", review:"Can't go wrong with Minecraft", rating:5, userId: new mongoose.Types.ObjectId('69d6fc1e27b8015128821918')}
 ];
 
 let dummyUsers = [
