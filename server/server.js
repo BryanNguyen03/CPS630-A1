@@ -4,6 +4,7 @@ const app = express();
 const path = require('path');
 const Review = require('./models/Review');
 const User = require('./models/User');
+const Game = require('./models/Game');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -189,6 +190,17 @@ app.delete('/api/items/:id', async (req, res) => {
     } catch (err) {
         console.error('Error deleting review with id ' + reviewId + ' ' + err);
         res.status(500).json({ error: "Failed to delete review" });
+    }
+});
+
+//route to get all the games from the database (GET)
+app.get('/api/games', async (req, res) => {
+    try {
+        const games = await Game.find();
+        res.status(200).json(games);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.toString() });
     }
 });
 

@@ -1,17 +1,26 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom'; // 1. Import Link
+import { useState, useEffect } from 'react';
 
-function GamesPage({ itemList }) {
+function GamesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [games, setGames] = useState([]);
 
-  const filteredGames = itemList.filter(item =>
-    item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetch('http://localhost:8080/api/games')
+      .then(res => res.json())
+      .then(data => setGames(data))
+      .catch(err => console.error('Error fetching games:', err));
+  }, []);
+
+  const filteredGames = searchTerm.trim() === ''
+    ? games
+    : games.filter(item =>
+        item.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
   return (
     <div className="page">
       <h2>Explore Games</h2>
-      <p>Browse through our collection of community-reviewed titles.</p>
+      <p>Browse through our collection of games.</p>
 
       <div className="search-container">
         <input
@@ -29,29 +38,30 @@ function GamesPage({ itemList }) {
         ) : (
           filteredGames.map((item) => (
             <div key={item._id} className="game-card">
+              {item.coverUrl && (
+                <img 
+                  src={item.coverUrl} 
+                  alt={`${item.name} cover`} 
+                  style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px' }}
+                />
+              )}
               <div className="game-header">
-                <h3>{item.gameName}</h3>
-                <span className={`rating-badge rate-${item.rating}`}>
-                  {item.rating}/5
-                </span>
+                <h3 style={{ marginTop: '10px' }}>{item.name}</h3>
+                {item.rating && (
+                  <span className={`rating-badge rate-${Math.round(item.rating / 20) || '0'}`}>
+                    {Math.round(item.rating / 20) || '0'}/5
+                  </span>
+                )}
               </div>
               
               <div className="game-body">
-                <p className="review-snippet">
-                  <strong>Latest Review:</strong> "{item.review}"
+                <p className="summary-snippet" style={{ fontSize: '0.9em', color: '#666' }}>
+                  {item.summary ? `${item.summary.substring(0, 100)}...` : 'No summary available.'}
                 </p>
               </div>
 
               <div className="game-footer">
-                <small>Review ID: {item._id.substring(0, 8)}...</small>
-                {/* 2. Changed button to Link */}
-                <Link 
-                  to={`/games/${item._id}/reviews`} 
-                  className="view-details-btn"
-                  style={{ textDecoration: 'none', textAlign: 'center' }}
-                >
-                  Read All Reviews
-                </Link>
+                <small>Released: {item.releaseDate ? new Date(item.releaseDate).toLocaleDateString() : 'Unknown'}</small>
               </div>
             </div>
           ))
