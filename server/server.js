@@ -41,6 +41,8 @@ db.on('open', function() {
 
 // Create reviews if they don't already exist in the database
 //simple list of reviews to demo the idea
+const { fetchAndCacheGames } = require('./services/igdbService');
+
 let reviews = [
     { userId:'5', gameName:'League of Legends', review:"Ruined my life",   rating: 5},
     { userId:'3', gameName:'FIFA 25', review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
@@ -73,6 +75,9 @@ async function addReviewsToMongoDB() {
 
 }
 addReviewsToMongoDB();
+
+// Initialize the Game cache from IGDB
+fetchAndCacheGames();
 
 
 //route to get all the reviews from the database (GET), READ multiple items
