@@ -10,7 +10,7 @@ const ReviewSchema = new mongoose.Schema({
     },
     gameName: {
         type: String,
-        unique: true,
+        unique: false,
         required: true
     },
     review: {
