@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Chat from './Chat';
 import ReviewList from './ReviewList';
+import UpdateReviewSection from './UpdateReviewSection';
 
 const socketServerUrl = 'http://localhost:8080';
 
@@ -29,6 +30,7 @@ function Profile({ currentUser, token }) {
   const authUsername = currentUser?.username || localStorage.getItem('authUsername') || '';
   const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
   const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
+  const showUpdateReviewSection = Boolean(isOwnProfile && authToken && itemList.length > 0);
 
   const fetchProfileReviews = useCallback(async () => {
     if (!viewedUsername) {
@@ -174,37 +176,18 @@ function Profile({ currentUser, token }) {
           />
         )}
 
-        {itemList.length > 0 && (
-            <div className="input-section">
-              <h4>Update a Review</h4>
-              <select
-                value={selectedReviewId}
-                onChange={(e) => setSelectedReviewId(e.target.value)}
-              >
-                <option value="">-- Select a review to update --</option>
-                {itemList.map(item => (
-                  <option key={item._id} value={item._id}>
-                    {item.gameName} — "{item.review.slice(0, 40)}{item.review.length > 40 ? '...' : ''}"
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Updated review text"
-                value={updatedReview}
-                onChange={(e) => setUpdatedReview(e.target.value)}
-              />
-              <input
-                type="number"
-                placeholder="Updated Rating (1-5)"
-                min={1}
-                max={5}
-                value={updatedRating}
-                onChange={(e) => setUpdatedRating(e.target.value)}
-              />
-              <button onClick={updateItem}>Update Review</button>
-            </div>
-          )}
+        {showUpdateReviewSection && (
+          <UpdateReviewSection
+            itemList={itemList}
+            selectedReviewId={selectedReviewId}
+            onSelectedReviewIdChange={setSelectedReviewId}
+            updatedReview={updatedReview}
+            onUpdatedReviewChange={setUpdatedReview}
+            updatedRating={updatedRating}
+            onUpdatedRatingChange={setUpdatedRating}
+            onUpdateReview={updateItem}
+          />
+        )}
       </div>
 
       <Chat
