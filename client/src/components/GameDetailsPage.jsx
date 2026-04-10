@@ -209,15 +209,6 @@ function GameDetailsPage({ token, currentUser }) {
         <div className="space-y-3 flex-1">
           <h2 className="page-title">{game.name}</h2>
 
-          {game.rating && (
-            <div className="flex items-center gap-2 text-sm text-text-muted">
-              <strong className="text-text-primary">IGDB Rating:</strong>
-              <span className={getRatingBadgeClasses(getNormalizedRating(game.rating / 20))}>
-                {getNormalizedRating(game.rating / 20)}/5
-              </span>
-            </div>
-          )}
-
           {game.releaseDate && (
             <p className="text-sm text-text-muted">
               <strong className="text-text-primary">Release Date:</strong> {new Date(game.releaseDate).toLocaleDateString()}
