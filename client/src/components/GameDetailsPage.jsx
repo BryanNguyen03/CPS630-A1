@@ -111,16 +111,16 @@ function GameDetailsPage({ token, currentUser }) {
         &lt;- Back to Games
       </Link>
 
-      <div className="grid gap-5 lg:grid-cols-[16rem,1fr] lg:items-start">
+      <div className="flex flex-nowrap gap-5 items-start">
         {game.coverUrl && (
           <img
             src={game.coverUrl}
             alt={`${game.name} cover`}
-            className="w-full max-w-64 rounded-xl border border-edge object-cover shadow-[0_24px_40px_-32px_rgba(0,0,0,0.95)]"
+            className="w-64 shrink-0 rounded-xl border border-edge object-cover shadow-[0_24px_40px_-32px_rgba(0,0,0,0.95)]"
           />
         )}
 
-        <div className="space-y-3">
+        <div className="space-y-3 flex-1">
           <h2 className="page-title">{game.name}</h2>
 
           {game.rating && (
