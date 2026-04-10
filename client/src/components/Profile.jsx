@@ -4,7 +4,6 @@ import Chat from './Chat';
 import ReviewList from './ReviewList';
 
 const socketServerUrl = 'http://localhost:8080';
-const activeChatPartnerStorageKey = 'activeChatPartnerUsername';
 
 const decodeUsernameParam = (value) => {
   if (!value) {
@@ -26,12 +25,10 @@ function Profile({ currentUser, token }) {
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-  const [chatPartnerUsername, setChatPartnerUsername] = useState('');
   const authToken = token || localStorage.getItem('authToken') || '';
   const authUsername = currentUser?.username || localStorage.getItem('authUsername') || '';
   const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
   const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
-  const activeChatUsername = isOwnProfile ? chatPartnerUsername : viewedUsername;
 
   const fetchProfileReviews = useCallback(async () => {
     if (!viewedUsername) {
@@ -65,75 +62,6 @@ function Profile({ currentUser, token }) {
     setUpdatedReview('');
     setUpdatedRating('');
   }, [fetchProfileReviews]);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    const setPartnerIfActive = (username) => {
-      if (!isCancelled) {
-        setChatPartnerUsername(username || '');
-      }
-    };
-
-    if (!viewedUsername) {
-      setPartnerIfActive('');
-      return () => {
-        isCancelled = true;
-      };
-    }
-
-    if (!isOwnProfile) {
-      setPartnerIfActive(viewedUsername);
-      if (authUsername && viewedUsername !== authUsername) {
-        localStorage.setItem(activeChatPartnerStorageKey, viewedUsername);
-      }
-      return () => {
-        isCancelled = true;
-      };
-    }
-
-    const storedPartner = localStorage.getItem(activeChatPartnerStorageKey) || '';
-    if (storedPartner && storedPartner !== authUsername) {
-      setPartnerIfActive(storedPartner);
-      return () => {
-        isCancelled = true;
-      };
-    }
-
-    const resolveDefaultPartner = async () => {
-      if (!authUsername) {
-        setPartnerIfActive('');
-        return;
-      }
-
-      try {
-        const response = await fetch(`${socketServerUrl}/api/users`);
-        if (!response.ok) {
-          throw new Error('Failed to load users for chat partner resolution');
-        }
-
-        const users = await response.json();
-        const fallbackPartner =
-          users
-            .map((user) => user.username)
-            .find((username) => Boolean(username) && username !== authUsername) || '';
-
-        setPartnerIfActive(fallbackPartner);
-        if (fallbackPartner) {
-          localStorage.setItem(activeChatPartnerStorageKey, fallbackPartner);
-        }
-      } catch (error) {
-        console.error('Error resolving default chat partner:', error);
-        setPartnerIfActive('');
-      }
-    };
-
-    resolveDefaultPartner();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [authUsername, isOwnProfile, viewedUsername]);
 
   const deleteItem = async (id) => {
     if (!isOwnProfile || !authToken) {
@@ -214,7 +142,7 @@ function Profile({ currentUser, token }) {
       <h2>{isOwnProfile ? 'My Profile' : `${viewedUsername}'s Profile`}</h2>
       <p>
         {isOwnProfile
-          ? `View and manage your reviews, and browse your chats${activeChatUsername ? ` with ${activeChatUsername}` : ''}.`
+          ? 'View and manage your reviews, and chat with anyone on your profile page.'
           : `Read ${viewedUsername}'s reviews and chat here.`}
       </p>
 
@@ -280,7 +208,7 @@ function Profile({ currentUser, token }) {
       </div>
 
       <Chat
-        viewedUsername={activeChatUsername}
+        viewedUsername={viewedUsername}
         authUsername={authUsername}
         authToken={authToken}
         isOwnProfile={isOwnProfile}

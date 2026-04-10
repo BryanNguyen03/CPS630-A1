@@ -9,6 +9,7 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
   const [newMessage, setNewMessage] = useState('');
 
   const socketRef = useRef(null);
+  const profileRoom = viewedUsername ? `profile:${viewedUsername}` : '';
   const canSendMessages = Boolean(viewedUsername && authToken && authUsername);
 
   useEffect(() => {
@@ -50,100 +51,38 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
       }
     };
 
-    const loadReadOnlyMessages = async () => {
+    const loadMessages = async () => {
+      if (!profileRoom) {
+        setMessagesIfActive([]);
+        return;
+      }
+
       try {
-        const usersResponse = await fetch(`${socketServerUrl}/api/users`);
-        if (!usersResponse.ok) {
-          throw new Error(`Failed to load users for ${viewedUsername}`);
-        }
-
-        const users = await usersResponse.json();
-        const peerUsernames = users
-          .map((user) => user.username)
-          .filter((username) => Boolean(username) && username !== viewedUsername);
-
-        if (peerUsernames.length === 0) {
-          setMessagesIfActive([]);
+        const response = await fetch(
+          `${socketServerUrl}/api/messages?room=${encodeURIComponent(profileRoom)}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setMessagesIfActive(data);
           return;
         }
-
-        const responses = await Promise.all(
-          peerUsernames.map((peerUsername) =>
-            fetch(
-              `${socketServerUrl}/api/messages?from=${encodeURIComponent(peerUsername)}&to=${encodeURIComponent(viewedUsername)}`
-            )
-          )
-        );
-
-        const payloads = await Promise.all(
-          responses.map(async (response) => {
-            if (!response.ok) {
-              return [];
-            }
-            return response.json();
-          })
-        );
-
-        const dedupedMessages = [];
-        const seen = new Set();
-        payloads.flat().forEach((message) => {
-          const key =
-            message._id ||
-            `${message.from || ''}|${message.to || ''}|${message.timestamp || ''}|${message.text || ''}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            dedupedMessages.push(message);
-          }
-        });
-
-        dedupedMessages.sort((a, b) => {
-          const aTime = new Date(a.timestamp || 0).getTime();
-          const bTime = new Date(b.timestamp || 0).getTime();
-          return aTime - bTime;
-        });
-
-        setMessagesIfActive(dedupedMessages);
       } catch (error) {
-        console.error('Error loading read-only chat messages:', error);
-        setMessagesIfActive([]);
-      }
-    };
-
-    const loadMessages = async () => {
-      if (!viewedUsername) {
-        setMessagesIfActive([]);
-        return;
+        console.error('Error loading profile room chat messages:', error);
       }
 
-      if (canSendMessages) {
-        try {
-          const response = await fetch(
-            `${socketServerUrl}/api/messages?from=${encodeURIComponent(authUsername)}&to=${encodeURIComponent(viewedUsername)}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setMessagesIfActive(data);
-          }
-        } catch (error) {
-          console.error('Error loading chat messages:', error);
-        }
-        return;
-      }
-
-      await loadReadOnlyMessages();
+      setMessagesIfActive([]);
     };
 
     loadMessages();
 
-    if (socketRef.current && canSendMessages) {
-      const room = [authUsername, viewedUsername].sort().join(':');
-      socketRef.current.emit('joinRoom', { room });
+    if (socketRef.current && canSendMessages && profileRoom) {
+      socketRef.current.emit('joinRoom', { room: profileRoom });
     }
 
     return () => {
       isCancelled = true;
     };
-  }, [authUsername, canSendMessages, viewedUsername]);
+  }, [canSendMessages, profileRoom]);
 
   const sendMessage = () => {
     if (!canSendMessages || !newMessage.trim()) {
@@ -152,7 +91,7 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
 
     const messagePayload = {
       from: authUsername,
-      to: viewedUsername,
+      room: profileRoom,
       text: newMessage.trim(),
       timestamp: new Date().toISOString()
     };
@@ -181,7 +120,7 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
 
   return (
     <div className="chat-box" style={{ marginTop: '2rem' }}>
-      <h3>{isOwnProfile ? `My Chats with ${viewedUsername}` : `Chat with ${viewedUsername}`}</h3>
+      <h3>{isOwnProfile ? 'My Profile Chat' : `${viewedUsername}'s Profile Chat`}</h3>
       <div
         className="message-list"
         style={{
