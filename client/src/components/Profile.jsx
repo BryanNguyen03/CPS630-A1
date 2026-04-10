@@ -133,9 +133,9 @@ function Profile({ currentUser, token }) {
 
   if (!viewedUsername) {
     return (
-      <div className="page">
-        <h2>Profile</h2>
-        <p>
+      <div className="page-shell">
+        <h2 className="page-title">Profile</h2>
+        <p className="page-subtitle">
           <Link to="/login">Log in</Link> to access your profile.
         </p>
       </div>
@@ -143,9 +143,9 @@ function Profile({ currentUser, token }) {
   }
 
   return (
-    <div className="page">
-      <h2>{isOwnProfile ? 'My Profile' : `${viewedUsername}'s Profile`}</h2>
-      <p>
+    <div className="page-shell">
+      <h2 className="page-title">{isOwnProfile ? 'My Profile' : `${viewedUsername}'s Profile`}</h2>
+      <p className="page-subtitle">
         {isOwnProfile
           ? canManageReviews
             ? 'View and manage your reviews, and chat with anyone on your profile page.'
@@ -153,21 +153,28 @@ function Profile({ currentUser, token }) {
           : `Read ${viewedUsername}'s reviews and chat here.`}
       </p>
 
-      <div className="items-container">
-        <h3>Reviews ({itemList.length})</h3>
+      <div className="panel space-y-4">
+        <h3 className="text-xl">Reviews ({itemList.length})</h3>
         {isLoadingReviews ? (
-          <p className="no-items">Loading reviews...</p>
+          <p className="empty-state">Loading reviews...</p>
         ) : isOwnProfile ? (
           itemList.length === 0 ? (
-            <p className="no-items">You haven't written any reviews yet.</p>
+            <p className="empty-state">You haven't written any reviews yet.</p>
           ) : (
-            <ul>
+            <ul className="space-y-2">
               {itemList.map((item) => (
-                <li key={item._id}>
-                  <span>
+                <li
+                  key={item._id}
+                  className="flex flex-col gap-3 rounded-xl border border-edge bg-bg-800/50 p-3 md:flex-row md:items-center md:justify-between"
+                >
+                  <span className="text-sm text-text-muted">
                     {item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5
                   </span>
-                  {canManageReviews && <button onClick={() => deleteItem(item._id)}>Delete</button>}
+                  {canManageReviews && (
+                    <button className="btn-danger w-fit" onClick={() => deleteItem(item._id)}>
+                      Delete
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

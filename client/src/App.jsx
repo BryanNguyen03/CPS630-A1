@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useParams } from 'react-router-dom'
-import './App.css'
 import NavBar from './components/NavBar'
 import Profile from './components/Profile'
 import ReviewSearchPage from './components/ReviewSearchPage'
@@ -14,7 +13,11 @@ import CommunityPage from './components/CommunityPage'
 // Protected route component
 function ProtectedRoute({ children, token }) {
   if (!token) {
-    return <p>Please log in to manage reviews.</p>;
+    return (
+      <div className="page-shell">
+        <p className="empty-state">Please log in to manage reviews.</p>
+      </div>
+    );
   }
   return children;
 }
@@ -27,14 +30,8 @@ function LegacyUserProfileRedirect() {
 // App component where all of our upper level components are located, these include the nav bar and 3 pages
 function App() {
   const [itemList, setItemList] = useState([]);
-
-
-
   const [userList, setUserList] = useState([]);
   const [currentUser, setCurrentUser] = useState({ username: localStorage.getItem('authUsername') || '' });
-  
-  
-
   const [token, setToken] = useState(localStorage.getItem('authToken') || '');   //storing the JWT locally on the client side
 
   const fetchItems = async () => {
@@ -46,18 +43,6 @@ function App() {
       }
     } catch (error) {
       console.error('Error fetching items:', error);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/users');
-      if (response.ok) {
-        const data = await response.json();
-        setUserList(data);
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error);
     }
   };
 
@@ -76,13 +61,39 @@ function App() {
   };
 
   useEffect(() => {
-    fetchItems();
-    fetchUsers();
+    let isActive = true;
+
+    const loadInitialData = async () => {
+      try {
+        const [itemsResponse, usersResponse] = await Promise.all([
+          fetch('http://localhost:8080/api/items'),
+          fetch('http://localhost:8080/api/users')
+        ]);
+
+        if (itemsResponse.ok && isActive) {
+          const itemsData = await itemsResponse.json();
+          setItemList(itemsData);
+        }
+
+        if (usersResponse.ok && isActive) {
+          const usersData = await usersResponse.json();
+          setUserList(usersData);
+        }
+      } catch (error) {
+        console.error('Error loading initial app data:', error);
+      }
+    };
+
+    loadInitialData();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   return (
-    <div>
-      <h1>ReviewLog</h1>
+    <div className="app-shell">
+      <h1 className="app-title">ReviewLog</h1>
       <NavBar
         token={token}
         onLogout={handleLogout}

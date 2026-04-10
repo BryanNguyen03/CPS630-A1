@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ReviewList from './ReviewList';
+import { getNormalizedRating, getRatingBadgeClasses } from '../utils/ratingStyles';
 
 function GameDetailsPage({ token, currentUser }) {
   const { id } = useParams();
@@ -15,7 +16,7 @@ function GameDetailsPage({ token, currentUser }) {
 
   const gameId = parseInt(id, 10);
 
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     return Promise.all([
       fetch(`http://localhost:8080/api/games/${gameId}`),
       fetch(`http://localhost:8080/api/games/${gameId}/reviews`)
@@ -31,11 +32,11 @@ function GameDetailsPage({ token, currentUser }) {
         console.error('Error fetching game details:', err);
         setLoading(false);
       });
-  };
+  }, [gameId]);
 
   useEffect(() => {
     fetchData();
-  }, [gameId]);
+  }, [fetchData]);
 
   // Check if the current logged-in user already has a review for this game
   const userAlreadyReviewed = token && currentUser?.username
@@ -86,53 +87,74 @@ function GameDetailsPage({ token, currentUser }) {
     }
   };
 
-  if (loading) return <div className="page">Loading game details...</div>;
-  if (!game) return <div className="page">Game not found.</div>;
+  if (loading) {
+    return (
+      <div className="page-shell">
+        <p className="empty-state">Loading game details...</p>
+      </div>
+    );
+  }
+
+  if (!game) {
+    return (
+      <div className="page-shell">
+        <p className="empty-state">Game not found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="page">
-      <Link to="/games" style={{ marginBottom: '20px', display: 'inline-block' }}>
-        ← Back to Games
+    <div className="page-shell">
+      <Link to="/" className="btn-secondary w-fit">
+        &lt;- Back to Games
       </Link>
 
-      <div className="game-details" style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'flex-start' }}>
+      <div className="grid gap-5 lg:grid-cols-[16rem,1fr] lg:items-start">
         {game.coverUrl && (
           <img
             src={game.coverUrl}
             alt={`${game.name} cover`}
-            style={{ width: '250px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}
+            className="w-full max-w-64 rounded-xl border border-edge object-cover shadow-[0_24px_40px_-32px_rgba(0,0,0,0.95)]"
           />
         )}
-        <div style={{ flex: 1 }}>
-          <h2>{game.name}</h2>
+
+        <div className="space-y-3">
+          <h2 className="page-title">{game.name}</h2>
+
           {game.rating && (
-            <div style={{ marginBottom: '15px' }}>
-              <strong>IGDB Rating:</strong>{' '}
-              <span className={`rating-badge rate-${Math.round(game.rating / 20) || '0'}`}>
-                {Math.round(game.rating / 20) || '0'}/5
+            <div className="flex items-center gap-2 text-sm text-text-muted">
+              <strong className="text-text-primary">IGDB Rating:</strong>
+              <span className={getRatingBadgeClasses(getNormalizedRating(game.rating / 20))}>
+                {getNormalizedRating(game.rating / 20)}/5
               </span>
             </div>
           )}
+
           {game.releaseDate && (
-            <p><strong>Release Date:</strong> {new Date(game.releaseDate).toLocaleDateString()}</p>
+            <p className="text-sm text-text-muted">
+              <strong className="text-text-primary">Release Date:</strong> {new Date(game.releaseDate).toLocaleDateString()}
+            </p>
           )}
-          <p style={{ lineHeight: '1.6' }}>{game.summary || 'No summary available.'}</p>
+
+          <p className="leading-7 text-text-muted">{game.summary || 'No summary available.'}</p>
         </div>
       </div>
 
-      <h3>Reviews for {game.name}</h3>
+      <h3 className="text-xl">Reviews for {game.name}</h3>
 
       {/* Add review form — only shown if logged in and haven't reviewed yet */}
       {token && !userAlreadyReviewed && (
-        <div className="input-section" style={{ marginBottom: '24px' }}>
-          <h4 style={{ marginBottom: '10px' }}>Leave a Review</h4>
+        <div className="panel space-y-3">
+          <h4 className="text-lg">Leave a Review</h4>
+
           <textarea
             value={newReviewText}
             onChange={(e) => setNewReviewText(e.target.value)}
             placeholder="Write your review..."
             rows={4}
-            style={{ width: '100%', marginBottom: '8px', resize: 'vertical' }}
+            className="textarea-field"
           />
+
           <input
             type="number"
             value={newRating}
@@ -140,12 +162,14 @@ function GameDetailsPage({ token, currentUser }) {
             placeholder="Rating (1–5)"
             min={1}
             max={5}
-            style={{ marginBottom: '8px' }}
+            className="input-field"
           />
+
           {submitError && (
-            <p style={{ color: 'red', marginBottom: '8px' }}>{submitError}</p>
+            <p className="text-sm text-rose-300">{submitError}</p>
           )}
-          <button onClick={submitReview} disabled={submitting}>
+
+          <button className="btn-primary w-fit" onClick={submitReview} disabled={submitting}>
             {submitting ? 'Submitting...' : 'Submit Review (POST)'}
           </button>
         </div>
@@ -153,19 +177,19 @@ function GameDetailsPage({ token, currentUser }) {
 
       {/* Already reviewed notice */}
       {token && userAlreadyReviewed && (
-        <p style={{ marginBottom: '16px', color: 'var(--color-text-secondary)' }}>
+        <p className="rounded-lg border border-edge bg-bg-800/50 p-3 text-sm text-text-muted">
           You've already reviewed this game. Head to Manage Reviews to edit or delete it.
         </p>
       )}
 
       {/* Not logged in nudge */}
       {!token && (
-        <p style={{ marginBottom: '16px', color: 'var(--color-text-secondary)' }}>
+        <p className="rounded-lg border border-edge bg-bg-800/50 p-3 text-sm text-text-muted">
           <Link to="/login">Log in</Link> to leave a review.
         </p>
       )}
 
-      <div className="reviews-list">
+      <div className="space-y-3">
         <ReviewList
           reviews={reviews}
           linkMode="profile"

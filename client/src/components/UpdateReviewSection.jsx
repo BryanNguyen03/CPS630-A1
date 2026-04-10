@@ -9,9 +9,11 @@ function UpdateReviewSection({
   onUpdateReview,
 }) {
   return (
-    <div className="input-section">
-      <h4>Update a Review</h4>
+    <div className="panel space-y-3">
+      <h4 className="text-lg">Update a Review</h4>
+
       <select
+        className="select-field"
         value={selectedReviewId}
         onChange={(e) => onSelectedReviewIdChange(e.target.value)}
       >
@@ -22,21 +24,26 @@ function UpdateReviewSection({
           </option>
         ))}
       </select>
+
       <input
         type="text"
+        className="input-field"
         placeholder="Updated review text"
         value={updatedReview}
         onChange={(e) => onUpdatedReviewChange(e.target.value)}
       />
+
       <input
         type="number"
+        className="input-field"
         placeholder="Updated Rating (1-5)"
         min={1}
         max={5}
         value={updatedRating}
         onChange={(e) => onUpdatedRatingChange(e.target.value)}
       />
-      <button onClick={onUpdateReview}>Update Review</button>
+
+      <button className="btn-primary w-fit" onClick={onUpdateReview}>Update Review</button>
     </div>
   );
 }

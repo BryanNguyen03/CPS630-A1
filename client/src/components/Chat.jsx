@@ -109,9 +109,9 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
     }
 
     return (
-      <div className="chat-box" style={{ marginTop: '2rem' }}>
-        <h3>My Chats</h3>
-        <p className="no-items">
+      <div className="panel mt-8 space-y-2">
+        <h3 className="text-xl">My Chats</h3>
+        <p className="empty-state">
           Open a profile from <Link to="/community">Community</Link> to select a chat conversation.
         </p>
       </div>
@@ -119,41 +119,27 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
   }
 
   return (
-    <div className="chat-box" style={{ marginTop: '2rem' }}>
-      <h3>{isOwnProfile ? 'My Profile Chat' : `${viewedUsername}'s Profile Chat`}</h3>
-      <div
-        className="message-list"
-        style={{
-          border: '1px solid #ccc',
-          padding: '12px',
-          minHeight: '300px',
-          marginBottom: '12px',
-          borderRadius: '8px',
-          overflowY: 'auto'
-        }}
-      >
+    <div className="panel mt-8 space-y-3">
+      <h3 className="text-xl">{isOwnProfile ? 'My Profile Chat' : `${viewedUsername}'s Profile Chat`}</h3>
+
+      <div className="max-h-80 min-h-72 overflow-y-auto rounded-xl border border-edge bg-bg-800/55 p-3">
         {messages.length === 0 ? (
-          <p className="no-items">
+          <p className="empty-state">
             {canSendMessages ? 'No messages yet.' : 'No public chat messages yet.'}
           </p>
         ) : (
           messages.map((message, index) => (
             <div
               key={`${message.timestamp || index}-${message.from}-${index}`}
-              style={{
-                marginBottom: '8px',
-                textAlign: message.from === authUsername ? 'right' : 'left'
-              }}
+              className={`mb-2 flex ${message.from === authUsername ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                style={{
-                  display: 'inline-block',
-                  padding: '8px 12px',
-                  borderRadius: '12px',
-                  backgroundColor:
-                    message.from === authUsername ? '#646cff' : 'rgba(255,255,255,0.1)',
-                  color: message.from === authUsername ? 'white' : 'inherit'
-                }}
+                className={[
+                  'max-w-[85%] rounded-2xl px-3 py-2 text-sm',
+                  message.from === authUsername
+                    ? 'bg-brand-500 text-white'
+                    : 'border border-edge bg-bg-700/75 text-text-primary'
+                ].join(' ')}
               >
                 <strong>{message.from === authUsername ? 'You' : message.from}:</strong>{' '}
                 {message.text}
@@ -163,21 +149,22 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
         )}
       </div>
 
-      <div className="input-section">
+      <div className="flex flex-col gap-2 md:flex-row">
         <input
           type="text"
+          className="input-field"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder={canSendMessages ? 'Type a message...' : 'Log in to start chatting'}
           disabled={!canSendMessages}
         />
-        <button onClick={sendMessage} disabled={!canSendMessages || !newMessage.trim()}>
+        <button className="btn-primary md:w-auto" onClick={sendMessage} disabled={!canSendMessages || !newMessage.trim()}>
           Send
         </button>
       </div>
 
       {!canSendMessages && (
-        <p className="no-items" style={{ marginTop: '8px' }}>
+        <p className="text-sm text-text-muted">
           Read-only mode. <Link to="/login">Log in</Link> to send messages.
         </p>
       )}

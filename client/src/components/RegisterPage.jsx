@@ -15,7 +15,6 @@ const RegisterPage = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
         alert('Registration successful!');
       } else {
         alert('Registration failed. Please try again.');
@@ -26,21 +25,27 @@ const RegisterPage = () => {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleRegister}>Register</button>
+    <div className="page-shell mx-auto max-w-lg">
+      <h2 className="page-title">Register</h2>
+      <p className="page-subtitle">Create an account to leave reviews and chat with the community.</p>
+
+      <div className="panel space-y-3">
+        <input
+          type="text"
+          className="input-field"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          className="input-field"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="btn-primary w-full" onClick={handleRegister}>Register</button>
+      </div>
     </div>
   );
 };

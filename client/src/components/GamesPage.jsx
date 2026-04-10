@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { getNormalizedRating, getRatingBadgeClasses } from '../utils/ratingStyles';
 
 function GamesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,12 +39,6 @@ function GamesPage() {
     return () => window.removeEventListener('resize', calculateBatchSize); //removing the listener when the component unloads (changing route)
   }, []); 
 
-
-  //reset loaded count when search term changes or when the viewport changes size
-  useEffect(() => {
-    setLoadedCount(batchSize);
-  }, [searchTerm, batchSize]);
-
   //applying the filter to the whole games array to keep it dynamic
   const filteredGames = searchTerm.trim() === ''
     ? games   //if no search then display all
@@ -78,80 +73,90 @@ function GamesPage() {
     );
 
 
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
+    const currentSentinel = sentinelRef.current;
+
+    if (currentSentinel) {
+      observer.observe(currentSentinel);
     }
 
     return () => {
       //stopping the observer once the sentinel element unloads
-      if (sentinelRef.current) {
-        observer.unobserve(sentinelRef.current);
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
       }
     };
   }, [loadedCount, filteredGames.length, isLoading, batchSize]);
 
   return (
-    <div className="page">
-      <h2>Explore Games</h2>
-      <p>Browse through our collection of games.</p>
+    <div className="page-shell">
+      <div className="space-y-1">
+        <h2 className="page-title">Explore Games</h2>
+        <p className="page-subtitle">Browse through our collection of games.</p>
+      </div>
 
-      <div className="search-container">
+      <div className="panel">
         <input
           type="text"
           placeholder="Search for a game..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setLoadedCount(batchSize);
+          }}
+          className="input-field"
         />
       </div>
 
-      <div className="games-grid">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filteredGames.length === 0 ? (
-          <p className="no-items">No games found matching "{searchTerm}"</p>
+          <p className="empty-state md:col-span-2 xl:col-span-3">No games found matching "{searchTerm}"</p>
         ) : (
           //render only the games currently loaded (displayedGames only)
-          displayedGames.map((item) => (
-            //Each card here has a link to the game page (GameDetailsPage component) it references
-            <Link to={`/games/${item.igdbId}`} key={item._id} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div className="game-card">
-              {item.coverUrl && (
-                <img 
-                  src={item.coverUrl} 
-                  alt={`${item.name} cover`} 
-                  style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px' }}
-                />
-              )}
-              <div className="game-header">
-                <h3 style={{ marginTop: '10px' }}>{item.name}</h3>
-                {item.rating && (
-                  <span className={`rating-badge rate-${Math.round(item.rating / 20) || '0'}`}>
-                    {Math.round(item.rating / 20) || '0'}/5
-                  </span>
-                )}
-              </div>
-              
-              <div className="game-body">
-                <p className="summary-snippet" style={{ fontSize: '0.9em', color: '#666' }}>
-                  {item.summary ? `${item.summary.substring(0, 100)}...` : 'No summary available.'}
-                </p>
-              </div>
+          displayedGames.map((item) => {
+            const rating = getNormalizedRating(item.rating / 20);
 
-              <div className="game-footer">
-                <small>Released: {item.releaseDate ? new Date(item.releaseDate).toLocaleDateString() : 'Unknown'}</small>
-              </div>
-            </div>
-            </Link>
-          ))
+            return (
+              //Each card here has a link to the game page (GameDetailsPage component) it references
+              <Link to={`/games/${item.igdbId}`} key={item._id} className="block no-underline">
+                <article className="card card-hover flex h-full flex-col gap-3">
+                  {item.coverUrl && (
+                    <img
+                      src={item.coverUrl}
+                      alt={`${item.name} cover`}
+                      className="h-40 w-full rounded-lg object-cover"
+                    />
+                  )}
+
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-text-primary">{item.name}</h3>
+                    {item.rating && (
+                      <span className={getRatingBadgeClasses(rating)}>
+                        {rating}/5
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-sm text-text-muted">
+                    {item.summary ? `${item.summary.substring(0, 100)}...` : 'No summary available.'}
+                  </p>
+
+                  <p className="mt-auto text-xs uppercase tracking-wide text-text-muted">
+                    Released: {item.releaseDate ? new Date(item.releaseDate).toLocaleDateString() : 'Unknown'}
+                  </p>
+                </article>
+              </Link>
+            );
+          })
         )}
       </div>
 
       {/* Sentinel element, when scrolled into view it triggers loading next batch */}
-      <div ref={sentinelRef} style={{ height: '20px', margin: '20px 0' }} />
+      <div ref={sentinelRef} className="my-4 h-5" />
 
       {/* Loading indicator which shows when the next batch is still loading and there is still games left to load */}
       {isLoading && loadedCount < filteredGames.length && (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <p style={{ color: '#999' }}>Loading more games...</p>
+        <div className="py-4 text-center text-sm text-text-muted">
+          <p>Loading more games...</p>
         </div>
       )}
     </div>

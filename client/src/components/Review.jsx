@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getRatingBadgeClasses } from '../utils/ratingStyles';
 
 const gameCoverCache = new Map();
 
@@ -45,28 +46,30 @@ const Review = ({ review, linkMode = 'none', showUserName = true }) => {
   }, [shouldLinkToGame, review.coverUrl, review.igdbId]);
 
   return (
-    <div className="review-card" style={{ border: '1px solid #ccc', padding: '10px', margin: '10px 0', borderRadius: '5px' }}>
+    <article className="card space-y-2">
       {shouldLinkToGame && displayCoverUrl && (
-        <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
-          <Link to={`/games/${review.igdbId}`} style={{ display: 'inline-block' }}>
+        <div className="mb-1 flex justify-start">
+          <Link to={`/games/${review.igdbId}`} className="inline-block">
             <img
               src={displayCoverUrl}
               alt={`${gameName} cover`}
-              style={{ width: '110px', borderRadius: '6px', objectFit: 'cover' }}
+              className="h-28 w-24 rounded-lg object-cover sm:h-32 sm:w-28"
             />
           </Link>
         </div>
       )}
-      <h4>
+
+      <h4 className="text-lg font-semibold">
         {shouldLinkToGame ? (
           <Link to={`/games/${review.igdbId}`}>{gameName}</Link>
         ) : (
           gameName
         )}
       </h4>
+
       {showUserName && (
-        <p>
-          <strong>User:</strong>{' '}
+        <p className="text-sm text-text-muted">
+          <strong className="text-text-primary">User:</strong>{' '}
           {shouldLinkToProfile ? (
             <Link to={`/user/${encodeURIComponent(review.userName)}`}>{userName}</Link>
           ) : (
@@ -74,9 +77,14 @@ const Review = ({ review, linkMode = 'none', showUserName = true }) => {
           )}
         </p>
       )}
-      <p><strong>Rating:</strong> {review.rating} / 5</p>
-      <p>{review.review}</p>
-    </div>
+
+      <div className="flex items-center gap-2 text-sm text-text-muted">
+        <strong className="text-text-primary">Rating:</strong>
+        <span className={getRatingBadgeClasses(review.rating)}>{review.rating}/5</span>
+      </div>
+
+      <p className="text-sm leading-6 text-text-muted">{review.review}</p>
+    </article>
   );
 };
 

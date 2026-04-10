@@ -1,5 +1,6 @@
 //Second HTML route for the Review Search by game and by Id, GET requests
 import { useState } from 'react';
+import { getRatingBadgeClasses } from '../utils/ratingStyles';
 
 function ReviewSearchPage({ itemList, onRefresh }) {
 
@@ -7,6 +8,10 @@ function ReviewSearchPage({ itemList, onRefresh }) {
   const [searchTermId, setSearchTermId] = useState('');
   const [searchedReviewId, setSearchedReviewId] = useState(0);
   const [itemListSecond, setItemListSecond] = useState([]);
+
+  const gameSearchResults = itemList.filter((item) =>
+    item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const fetchItemsByReviewId = async (id) => {
     setItemListSecond([]);
@@ -26,109 +31,104 @@ function ReviewSearchPage({ itemList, onRefresh }) {
   };
 
   return (
-    <div className="page">
-      <h2>Review Search by Game</h2>
-      <p>Search for reviews using the GET multiple items request</p>
-
-      <div className="input-section">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search for a review by Game..."
-        />
-        <button onClick={() => onRefresh()}>Search (GET)</button>
+    <div className="page-shell">
+      <div className="space-y-1">
+        <h2 className="page-title">Review Search by Game</h2>
+        <p className="page-subtitle">Search for reviews using the GET multiple items request.</p>
       </div>
 
-      <div className="items-container">
-        <h3>Search Results ({itemList.filter(item =>
-          item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
-        ).length})</h3>
-        {itemList.filter(item =>
-          item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
-        ).length === 0 ? (
-          <p className="no-items">
+      <div className="panel space-y-4">
+        <div className="flex flex-col gap-2 md:flex-row">
+          <input
+            type="text"
+            className="input-field"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search for a review by Game..."
+          />
+          <button className="btn-primary md:w-auto" onClick={() => onRefresh()}>Search (GET)</button>
+        </div>
+
+        <h3 className="text-lg">Search Results ({gameSearchResults.length})</h3>
+
+        {gameSearchResults.length === 0 ? (
+          <p className="empty-state">
             {searchTerm ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
           </p>
         ) : (
-          <div className="reviews-list">
-            {itemList
-              .filter(item => item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase()))
-              .map(item => (
-                <div key={item._id} className="game-card" style={{ marginBottom: '15px' }}>
-                  <div className="game-header">
-                    <strong>{item.gameName}</strong>
-                    <span className={`rating-badge rate-${item.rating}`}>
-                      {item.rating}/5
-                    </span>
-                  </div>
-                  <div className="game-body">
-                    <p>"{item.review}"</p>
-                    <small style={{ color: 'var(--color-text-secondary)' }}>
-                      Review ID: {item._id}
-                    </small>
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
-      </div>
-
-      <h2>Review Search by ID</h2>
-      <p>Search for reviews using the GET an item request</p>
-      <div className="input-section">
-        <input
-          type="text"
-          value={searchTermId}
-          onChange={(e) => {
-            setSearchTermId(e.target.value);
-            if (e.target.value.trim() === '') {
-              setSearchedReviewId(0);
-            }
-          }}
-          placeholder="Search for a review by its ID..."
-        />
-        <button
-          onClick={() => {
-            if (!searchTermId.trim()) {
-              setItemListSecond([]);
-              return;
-            }
-            fetchItemsByReviewId(searchTermId.toLowerCase());
-          }}
-        >
-          Search (GET)
-        </button>
-      </div>
-
-      <div className="items-container">
-        <h3>Search Results</h3>
-        {itemListSecond.length === 0 ? (
-          <p className="no-items">
-            {searchedReviewId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
-          </p>
-        ) : (
-          <div className="reviews-list">
-            {itemListSecond.map(item => (
-              <div key={item._id} className="game-card" style={{ marginBottom: '15px' }}>
-                <div className="game-header">
-                  <strong>{item.gameName}</strong>
-                  <span className={`rating-badge rate-${item.rating}`}>
+          <div className="space-y-3">
+            {gameSearchResults.map((item) => (
+              <article key={item._id} className="card space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <strong className="text-base text-text-primary">{item.gameName}</strong>
+                  <span className={getRatingBadgeClasses(item.rating)}>
                     {item.rating}/5
                   </span>
                 </div>
-                <div className="game-body">
-                  <p>"{item.review}"</p>
-                  <small style={{ color: 'var(--color-text-secondary)' }}>
-                    Review ID: {item._id}
-                  </small>
-                </div>
-              </div>
+                <p className="text-sm text-text-muted">"{item.review}"</p>
+                <p className="font-mono text-xs text-text-muted">Review ID: {item._id}</p>
+              </article>
             ))}
           </div>
         )}
       </div>
 
+      <div className="panel space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl">Review Search by ID</h2>
+          <p className="page-subtitle">Search for reviews using the GET an item request.</p>
+        </div>
+
+        <div className="flex flex-col gap-2 md:flex-row">
+          <input
+            type="text"
+            className="input-field"
+            value={searchTermId}
+            onChange={(e) => {
+              setSearchTermId(e.target.value);
+              if (e.target.value.trim() === '') {
+                setSearchedReviewId(0);
+              }
+            }}
+            placeholder="Search for a review by its ID..."
+          />
+          <button
+            className="btn-primary md:w-auto"
+            onClick={() => {
+              if (!searchTermId.trim()) {
+                setItemListSecond([]);
+                return;
+              }
+              fetchItemsByReviewId(searchTermId.toLowerCase());
+            }}
+          >
+            Search (GET)
+          </button>
+        </div>
+
+        <h3 className="text-lg">Search Results</h3>
+
+        {itemListSecond.length === 0 ? (
+          <p className="empty-state">
+            {searchedReviewId ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {itemListSecond.map(item => (
+              <article key={item._id} className="card space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <strong className="text-base text-text-primary">{item.gameName}</strong>
+                  <span className={getRatingBadgeClasses(item.rating)}>
+                    {item.rating}/5
+                  </span>
+                </div>
+                <p className="text-sm text-text-muted">"{item.review}"</p>
+                <p className="font-mono text-xs text-text-muted">Review ID: {item._id}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

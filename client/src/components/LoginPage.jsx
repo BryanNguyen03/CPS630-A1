@@ -35,21 +35,27 @@ const LoginPage = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleLogin}>Login</button>
+    <div className="page-shell mx-auto max-w-lg">
+      <h2 className="page-title">Login</h2>
+      <p className="page-subtitle">Sign in to manage reviews and join profile chats.</p>
+
+      <div className="panel space-y-3">
+        <input
+          type="text"
+          className="input-field"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          className="input-field"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="btn-primary w-full" onClick={handleLogin}>Login</button>
+      </div>
     </div>
   );
 };

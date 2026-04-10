@@ -24,41 +24,40 @@ const CommunityPage = ({ currentUser, users = [] }) => {
   };
 
   return (
-    <div className="page">
-      <h2>Community</h2>
-      <p>Find users and open their profiles.</p>
+    <div className="page-shell">
+      <div className="space-y-1">
+        <h2 className="page-title">Community</h2>
+        <p className="page-subtitle">Find users and open their profiles.</p>
+      </div>
 
-      <div className="user-selection-section">
-        <h3>Search Users</h3>
-        <div className="search-container">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search by username..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      <div className="panel space-y-4">
+        <h3 className="text-xl">Search Users</h3>
 
-        <div className="search-results">
-          {filteredUsers.length > 0 ? (
-            <ul className="user-list">
-              {filteredUsers.map((user) => (
-                <li
-                  key={user._id || user.username}
-                  className="user-item"
-                  onClick={() => openProfile(user.username)}
-                >
-                  {user.username}
-                </li>
-              ))}
-            </ul>
-          ) : searchTerm ? (
-            <p className="no-items">No users found matching "{searchTerm}"</p>
-          ) : (
-            <p className="no-items">No other users found yet.</p>
-          )}
-        </div>
+        <input
+          type="text"
+          className="input-field"
+          placeholder="Search by username..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        {filteredUsers.length > 0 ? (
+          <ul className="max-h-80 overflow-y-auto rounded-xl border border-edge bg-bg-800/45">
+            {filteredUsers.map((user) => (
+              <li
+                key={user._id || user.username}
+                className="cursor-pointer border-b border-edge/60 px-4 py-3 text-sm text-text-primary transition last:border-b-0 hover:bg-bg-700/55"
+                onClick={() => openProfile(user.username)}
+              >
+                {user.username}
+              </li>
+            ))}
+          </ul>
+        ) : searchTerm ? (
+          <p className="empty-state">No users found matching "{searchTerm}"</p>
+        ) : (
+          <p className="empty-state">No other users found yet.</p>
+        )}
       </div>
     </div>
   );

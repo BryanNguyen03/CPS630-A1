@@ -11,42 +11,45 @@ function NavBar({ token, onLogout, currentUser }) {
   };
 
   const isActive = (path) => location.pathname === path;
+  const getTabClasses = (path) => [
+    'nav-tab',
+    isActive(path) ? 'nav-tab-active' : 'nav-tab-idle'
+  ].join(' ');
 
   return (
-    <div className="navigation">
-
-
+    <nav className="nav-shell">
       {token && (
         <button
-          className={isActive('/MyProfile') ? 'active' : ''}
+          className={getTabClasses('/MyProfile')}
           onClick={() => navigate('/MyProfile')}
         >
           My Profile
         </button>
       )}
 
-    
-    <button
-        className={isActive('/') ? 'active' : ''}
+      <button
+        className={getTabClasses('/')}
         onClick={() => navigate('/')}
       >
         Games
       </button>
 
       <button
-        className={isActive('/search') ? 'active' : ''}
+        className={getTabClasses('/search')}
         onClick={() => navigate('/search')}
       >
         Review Search
       </button>
+
       <button
-        className={isActive('/community') ? 'active' : ''}
+        className={getTabClasses('/community')}
         onClick={() => navigate('/community')}
       >
         Community
       </button>
+
       <button
-        className={isActive('/about') ? 'active' : ''}
+        className={getTabClasses('/about')}
         onClick={() => navigate('/about')}
       >
         About
@@ -54,13 +57,12 @@ function NavBar({ token, onLogout, currentUser }) {
 
       {token ? (
         <>
-          <span className='nav-user' style={{ color: 'white', padding: '0 10px' }}>
+          <span className="ml-auto rounded-lg border border-edge bg-bg-800 px-3 py-2 text-sm text-text-muted">
             Hi, {currentUser?.username}
           </span>
           <button
-            className="logout-btn"
+            className="btn-danger"
             onClick={handleLogout}
-            style={{ backgroundColor: '#ff4444', color: 'white' }}
           >
             Logout
           </button>
@@ -68,20 +70,20 @@ function NavBar({ token, onLogout, currentUser }) {
       ) : (
         <>
           <button
-            className={isActive('/login') ? 'active' : ''}
+            className={getTabClasses('/login')}
             onClick={() => navigate('/login')}
           >
             Login
           </button>
           <button
-            className={isActive('/register') ? 'active' : ''}
+            className={getTabClasses('/register')}
             onClick={() => navigate('/register')}
           >
             Register
           </button>
         </>
       )}
-    </div>
+    </nav>
   );
 }
 
