@@ -26,12 +26,22 @@ function Profile({ currentUser, token }) {
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+
   const authToken = token || localStorage.getItem('authToken') || '';
   const authUsername = currentUser?.username || localStorage.getItem('authUsername') || '';
   const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
   const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
   const canManageReviews = Boolean(isOwnProfile && authToken);
   const showUpdateReviewSection = Boolean(canManageReviews && !isLoadingReviews && itemList.length > 0);
+
+  const RESULTS_PER_PAGE = isOwnProfile ? 4 : 2;
+
+  const totalPages = Math.ceil(itemList.length / RESULTS_PER_PAGE);
+  const paginatedItems = itemList.slice(
+    currentPage * RESULTS_PER_PAGE,
+    currentPage * RESULTS_PER_PAGE + RESULTS_PER_PAGE
+  );
 
   const fetchProfileReviews = useCallback(async () => {
     setItemList([]);
@@ -54,6 +64,7 @@ function Profile({ currentUser, token }) {
         .reverse();
 
       setItemList(filteredReviews);
+      setCurrentPage(0);
     } catch (error) {
       console.error('Error fetching profile reviews:', error);
     } finally {
@@ -131,6 +142,30 @@ function Profile({ currentUser, token }) {
     }
   };
 
+  const PaginationControls = () => (
+    totalPages > 1 && (
+      <div className="flex items-center justify-between pt-2">
+        <button
+          className="btn-primary md:w-auto"
+          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+          disabled={currentPage === 0}
+        >
+          ← Previous
+        </button>
+        <span className="text-sm text-text-muted">
+          Page {currentPage + 1} of {totalPages}
+        </span>
+        <button
+          className="btn-primary md:w-auto"
+          onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+          disabled={currentPage === totalPages - 1}
+        >
+          Next →
+        </button>
+      </div>
+    )
+  );
+
   if (!viewedUsername) {
     return (
       <div className="page-shell">
@@ -167,31 +202,37 @@ function Profile({ currentUser, token }) {
           itemList.length === 0 ? (
             <p className="empty-state">You haven't written any reviews yet.</p>
           ) : (
-            <ul className="space-y-2">
-              {itemList.map((item) => (
-                <li
-                  key={item._id}
-                  className="flex flex-col gap-3 rounded-xl border border-edge bg-bg-800/50 p-3 md:flex-row md:items-center md:justify-between"
-                >
-                  <span className="text-sm text-text-muted">
-                    {item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5
-                  </span>
-                  {canManageReviews && (
-                    <button className="btn-danger w-fit" onClick={() => deleteItem(item._id)}>
-                      Delete
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-2">
+                {paginatedItems.map((item) => (
+                  <li
+                    key={item._id}
+                    className="flex flex-col gap-3 rounded-xl border border-edge bg-bg-800/50 p-3 md:flex-row md:items-center md:justify-between"
+                  >
+                    <span className="text-sm text-text-muted">
+                      {item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5
+                    </span>
+                    {canManageReviews && (
+                      <button className="btn-danger w-fit" onClick={() => deleteItem(item._id)}>
+                        Delete
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <PaginationControls />
+            </>
           )
         ) : (
-          <ReviewList
-            reviews={itemList}
-            linkMode="game"
-            showUserName={false}
-            emptyMessage="This user has not posted any reviews yet."
-          />
+          <>
+            <ReviewList
+              reviews={paginatedItems}
+              linkMode="game"
+              showUserName={false}
+              emptyMessage="This user has not posted any reviews yet."
+            />
+            <PaginationControls />
+          </>
         )}
 
         {showUpdateReviewSection && (
