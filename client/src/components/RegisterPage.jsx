@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const RegisterPage = ({ showToast }) => {
+const RegisterPage = ({onRegistrationSuccess, showToast }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -23,6 +23,8 @@ const RegisterPage = ({ showToast }) => {
         showToast?.('Registration successful! You can now log in.', 'success');
         setUsername('');
         setPassword('');
+        //refreshing the userlist to include the new user via parent component function from App
+        onRegistrationSuccess();
       } else {
         const data = await response.json().catch(() => ({}));
         showToast?.(data.message || 'Registration failed. Please try again.', 'error');

@@ -72,6 +72,20 @@ function App() {
     showToast('Login successful.', 'success');
   };
 
+  //handler function to update the current userlist array if there has been a successful registration
+  //function is passed to the RegisterPage component
+  const handleRegistrationUserListUpdate = async () => {
+    try {
+      const usersResponse = await fetch('http://localhost:8080/api/users');
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        setUserList(usersData);
+      }
+    } catch (error) {
+      console.error('Error loading new user list data:', error);
+    }
+  };
+
   useEffect(() => {
     if (!toast) {
       return;
@@ -159,7 +173,7 @@ function App() {
         />
         <Route
           path="/register"
-          element={<RegisterPage showToast={showToast} />}
+          element={<RegisterPage onRegistrationSuccess={handleRegistrationUserListUpdate} showToast={showToast} />}
         />
         <Route
           path="/community"
