@@ -2,8 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getRatingBadgeClasses } from '../utils/ratingStyles';
 
+// In-memory cache so repeated renders of the same game don't re-fetch covers
 const gameCoverCache = new Map();
 
+/**
+ * linkMode controls which entity the review links to, depending on the page context:
+ *   - 'game'    → game title & cover link to the game page  (used on user profile)
+ *   - 'profile' → username links to the reviewer's profile  (used on game details page)
+ *   - 'none'    → no navigation links rendered (default)
+ */
 const Review = ({ review, linkMode = 'none', showUserName = true }) => {
   const [coverUrl, setCoverUrl] = useState(() => review.coverUrl || gameCoverCache.get(review.igdbId) || '');
   const gameName = review.gameName || 'Unknown game';

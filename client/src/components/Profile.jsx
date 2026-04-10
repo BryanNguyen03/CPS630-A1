@@ -225,6 +225,7 @@ function Profile({ currentUser, token }) {
           )
         ) : (
           <>
+            {/* On another user's profile, link each review to its game page */}
             <ReviewList
               reviews={paginatedItems}
               linkMode="game"

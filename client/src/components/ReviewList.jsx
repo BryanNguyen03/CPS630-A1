@@ -1,6 +1,10 @@
 import React from 'react';
 import Review from './Review';
 
+/**
+ * linkMode is passed through to each Review to control navigation based on page context.
+ * See Review.jsx for the full set of supported values.
+ */
 const ReviewList = ({ reviews = [], linkMode = 'none', emptyMessage = 'No reviews yet.', showUserName = true }) => {
   if (reviews.length === 0) {
     return <p className="empty-state">{emptyMessage}</p>;
