@@ -21,26 +21,42 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
       return;
     }
 
-    const socket = io(socketServerUrl, {
-      transports: ['websocket'],
-      auth: { token: authToken }
-    });
+    let isCancelled = false;
+    const socketInitTimer = setTimeout(() => {
+      if (isCancelled) {
+        return;
+      }
 
-    socketRef.current = socket;
+      const socket = io(socketServerUrl, {
+        transports: ['websocket'],
+        auth: { token: authToken }
+      });
 
-    socket.on('connect', () => {
-      console.log('Connected to chat socket', socket.id);
-    });
+      socketRef.current = socket;
 
-    socket.on('chatMessage', (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
+      socket.on('connect', () => {
+        console.log('Connected to chat socket', socket.id);
+        if (profileRoom) {
+          socket.emit('joinRoom', { room: profileRoom });
+        }
+      });
+
+      socket.on('chatMessage', (message) => {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      });
+    }, 0);
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      isCancelled = true;
+      clearTimeout(socketInitTimer);
+      if (socketRef.current) {
+        socketRef.current.off('connect');
+        socketRef.current.off('chatMessage');
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
-  }, [canSendMessages, authToken]);
+  }, [canSendMessages, authToken, profileRoom]);
 
   useEffect(() => {
     let isCancelled = false;
