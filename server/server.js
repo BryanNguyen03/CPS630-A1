@@ -57,7 +57,8 @@ db.on('open', function() {
 //creating test users for the site, this is before they are entered into the database
 let dummyUsers = [
     { username: '123', password: '123' },
-    { username: 'abc', password: 'abc' }
+    { username: 'abc', password: 'abc' },
+    { username: 'xyz', password: 'xyz' }
 ];
 
 
@@ -66,12 +67,12 @@ let dummyUsers = [
 const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
 
 let reviews = [                                                                                   //remove the object ID here and just use username since we dont have these IDs on a fresh run
-    { igdbId: 12345, gameName: "Apex Legends", review:"Ruined my life",   rating: 5},
-    { igdbId: 12345, gameName: "Apex Legends", review:"Enjoyed playing proclubs; however, didn't like the fifa points",   rating: 4},
-    { igdbId: 69696, gameName: "Minecraft", review:"Always rage, always come back", rating: 3},
-    { igdbId: 69696, gameName: "Minecraft", review:"Too many Sweats", rating: 5},
-    { igdbId: 69696, gameName: "Minecraft", review:"Same game as last year", rating:2},
-    { igdbId: 69696, gameName: "Minecraft", review:"Can't go wrong with Minecraft", rating:5}
+    { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    { igdbId: 69696, gameName: "FC 24", review:"Too many Sweats", rating: 5},
+    { igdbId: 69696, gameName: "FC 24", review:"Same game as last year", rating:2},
+    { igdbId: 69696, gameName: "FC 24", review:"Can't go wrong with football", rating:5}
 ];                                  
 
 
@@ -106,9 +107,12 @@ async function addDummyDataToMongoDB() {
         //adding dummy reviews only if there is none in the DB
         const reviewCount = await Review.countDocuments();
 
-        if (reviewCount === 0 && userIds.length > 0) { //making sure that there is users
+        if (reviewCount === 0 && userIds.length > 0 && userNameStrings.length > 0) { //making sure that there is users
             console.log('Adding test reviews to db ...');
             
+
+            console.log(userNameStrings[1 % userNameStrings.length])
+
             //connecting the dummy reviews to alternating dummy users in the dictionary
             reviews = reviews.map((review, index) => ({
                 //getting all the fields from the dummy review, then adding a mongo document userID
@@ -136,8 +140,8 @@ addDummyDataToMongoDB();
 // Initialize the Game cache from IGDB
 
 let dummyGames = [
-    { igdbId: 69696, name: "FC 24", summary: "A great football game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co69sm.jpg", rating: 85, releaseDate: new Date() },
-    { igdbId: 12345, name: "Minecraft", summary: "Sandbox survival game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co69sp.jpg", rating: 90, releaseDate: new Date() }
+    { igdbId: 69696, name: "FC 24", summary: "A great football game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qqa.jpg", rating: 85, releaseDate: new Date() },
+    { igdbId: 12345, name: "Minecraft", summary: "Sandbox survival game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co8fu7.jpg", rating: 90, releaseDate: new Date() }
 ];
 
 async function addDummyGamesToMongoDB() {
