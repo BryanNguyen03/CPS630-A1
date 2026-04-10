@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import Profile from './components/Profile'
@@ -9,6 +9,7 @@ import LoginPage from './components/LoginPage'
 import GamesPage from './components/GamesPage'
 import GameDetailsPage from './components/GameDetailsPage'
 import CommunityPage from './components/CommunityPage'
+import Toast from './components/Toast'
 
 // Protected route component
 function ProtectedRoute({ children, token }) {
@@ -33,6 +34,15 @@ function App() {
   const [userList, setUserList] = useState([]);
   const [currentUser, setCurrentUser] = useState({ username: localStorage.getItem('authUsername') || '' });
   const [token, setToken] = useState(localStorage.getItem('authToken') || '');   //storing the JWT locally on the client side
+  const [toast, setToast] = useState(null);
+
+  const showToast = useCallback((message, type = 'success') => {
+    if (!message) {
+      return;
+    }
+
+    setToast({ id: Date.now(), message, type });
+  }, []);
 
   const fetchItems = async () => {
     try {
@@ -51,6 +61,7 @@ function App() {
     localStorage.removeItem('authUsername');
     setToken('');
     setCurrentUser({ username: '' });
+    showToast('Logged out successfully.', 'success');
   };
 
   const handleLoginSuccess = ({ token: newToken, username }) => {
@@ -58,7 +69,20 @@ function App() {
     localStorage.setItem('authUsername', username);
     setToken(newToken);
     setCurrentUser({ username });
+    showToast('Login successful.', 'success');
   };
+
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setToast(null);
+    }, 2800);
+
+    return () => clearTimeout(timeoutId);
+  }, [toast]);
 
   useEffect(() => {
     let isActive = true;
@@ -99,12 +123,17 @@ function App() {
         onLogout={handleLogout}
         currentUser={currentUser}
       />
+      <Toast
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       <Routes>
         <Route
           path="/MyProfile"
           element={
             <ProtectedRoute token={token}>
-              <Profile token={token} currentUser={currentUser} />
+              <Profile token={token} currentUser={currentUser} showToast={showToast} />
             </ProtectedRoute>
           }
         />
@@ -121,16 +150,16 @@ function App() {
 
         <Route
           path="/games/:id"
-          element={<GameDetailsPage token={token} currentUser={currentUser} />}
+          element={<GameDetailsPage token={token} currentUser={currentUser} showToast={showToast} />}
         />
   
         <Route
           path="/login"
-          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+          element={<LoginPage onLoginSuccess={handleLoginSuccess} showToast={showToast} />}
         />
         <Route
           path="/register"
-          element={<RegisterPage />}
+          element={<RegisterPage showToast={showToast} />}
         />
         <Route
           path="/community"
@@ -143,7 +172,7 @@ function App() {
         />
         <Route
           path="/user/:username"
-          element={<Profile token={token} currentUser={currentUser} />}
+          element={<Profile token={token} currentUser={currentUser} showToast={showToast} />}
         />
         <Route
           path="/users/:username"

@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const LoginPage = ({ onLoginSuccess }) => {
+const LoginPage = ({ onLoginSuccess, showToast }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
+    if (!username.trim() || !password) {
+      showToast?.('Please enter both username and password.', 'error');
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:8080/api/login', {
         method: 'POST',
@@ -19,18 +24,16 @@ const LoginPage = ({ onLoginSuccess }) => {
       if (response.ok) {
         const data = await response.json();
         const receivedToken = data.token;
-        const username = data.username;
-        localStorage.setItem('authToken', receivedToken);
-        localStorage.setItem('authUsername', username);
-        onLoginSuccess({ token: receivedToken, username }); // Update token and username in App.js
+        const loggedInUsername = data.username;
+        onLoginSuccess({ token: receivedToken, username: loggedInUsername });
         navigate('/', { replace: true });
-        alert('Login successful!');
-
       } else {
-        alert('Login failed. Please check your credentials.');
+        const data = await response.json().catch(() => ({}));
+        showToast?.(data.message || 'Login failed. Please check your credentials.', 'error');
       }
     } catch (error) {
       console.error('Error during login:', error);
+      showToast?.('An error occurred while logging in. Please try again.', 'error');
     }
   };
 
