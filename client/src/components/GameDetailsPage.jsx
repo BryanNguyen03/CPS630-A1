@@ -13,6 +13,8 @@ function GameDetailsPage({ token, currentUser }) {
   const [newReviewText, setNewReviewText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [sortBy, setSortBy] = useState('highest'); // 'highest' or 'lowest'
+  const [ratingFilter, setRatingFilter] = useState('all'); // 'all' or '1','2','3','4','5'
 
   const gameId = parseInt(id, 10);
 
@@ -189,11 +191,59 @@ function GameDetailsPage({ token, currentUser }) {
         </p>
       )}
 
+      
       <div className="space-y-3">
+        {/* Sort and Filter Controls */}
+        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="sort-by" className="text-sm font-medium text-text-primary">
+              Sort by Rating
+            </label>
+            <select
+              id="sort-by"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="input-field"
+            >
+              <option value="highest">Highest to Low</option>
+              <option value="lowest">Lowest to High</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="filter-rating" className="text-sm font-medium text-text-primary">
+              Filter by Rating
+            </label>
+            <select
+              id="filter-rating"
+              value={ratingFilter}
+              onChange={(e) => setRatingFilter(e.target.value)}
+              className="input-field"
+            >
+              <option value="all">All Ratings</option>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Filtered and sorted reviews */}
         <ReviewList
-          reviews={reviews}
+          reviews={reviews
+            .filter((r) => ratingFilter === 'all' || r.rating === parseInt(ratingFilter, 10))
+            .sort((a, b) => {
+              if (sortBy === 'highest') {
+                return (b.rating || 0) - (a.rating || 0);
+              } else {
+                return (a.rating || 0) - (b.rating || 0);
+              }
+            })
+          }
           linkMode="profile"
-          emptyMessage="No reviews yet for this game."
+          emptyMessage="No reviews found with selected filters."
         />
       </div>
     </div>
