@@ -9,12 +9,14 @@ Handle all dummy data for initial load and testing
 Create dummy users, reviews, games, and messages if they don't already exist in DB
 */
 
+// Create dummy users
 const dummyUsers = [
     { username: '123', password: '123' },
     { username: 'abc', password: 'abc' },
     { username: 'xyz', password: 'xyz' }
 ];
 
+// Create dummy reviews
 const dummyReviews = [
     { igdbId: 12345, gameName: "Minecraft", review: "Ruined my life", rating: 5 },
     { igdbId: 12345, gameName: "Minecraft", review: "Enjoyed playing proclubs; however, didn't like the minecoins", rating: 4 },
@@ -41,11 +43,13 @@ const dummyReviews = [
     // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3}
 ];
 
+// Create dummy games
 const dummyGames = [
     { igdbId: 69696, name: "FC 24", summary: "A great football game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qqa.jpg", rating: 85, releaseDate: new Date() },
     { igdbId: 12345, name: "Minecraft", summary: "Sandbox survival game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co8fu7.jpg", rating: 90, releaseDate: new Date() }
 ];
 
+// Create dummy messages
 const dummyMessages = [
     { from: '123', text: 'Great Reviews, great taste!', timestamp: new Date('2024-01-10T10:00:00') },
     { from: 'xyz', text: 'fellow game enjoyer', timestamp: new Date('2024-01-10T10:01:00') },

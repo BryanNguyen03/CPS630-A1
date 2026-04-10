@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// model for games
 const gameSchema = new mongoose.Schema({
   igdbId: {
     type: Number,
