@@ -76,6 +76,41 @@ let reviews = [                                                                 
     { igdbId: 69696, gameName: "FC 24", review:"Can't go wrong with football", rating:5}
 ];                                  
 
+// dummy messages between dummy users abc and 123
+let dummyMessages = [
+    { from: '123', text: 'Great Reviews, great taste!', timestamp: new Date('2024-01-10T10:00:00') },
+    { from: 'xyz', text: 'fellow game enjoyer', timestamp: new Date('2024-01-10T10:01:00') },
+    { from: '123', text: 'Get hyped for the next FC!', timestamp: new Date('2024-01-10T10:02:00') },
+    { from: 'xyz', text: 'Yup, definitely looking forward to it', timestamp: new Date('2024-01-10T10:03:00') },
+    { from: '123', text: 'We should run some proclubs sometimes', timestamp: new Date('2024-01-10T10:04:00') },
+    { from: 'xyz', text: 'For sure', timestamp: new Date('2024-01-10T10:05:00') },
+];
+
+// Functiont o add the dummy messages to DB if no messages exist
+async function addDummyMessagesMongoDB() {
+    try {
+        const messageCount = await Message.countDocuments();
+
+        if (messageCount === 0) {
+            console.log('Adding test messages to db ...');
+
+            // Match the frontend's room naming convention
+            const room = 'profile:123';  // messages on 123's profile page
+
+            for (const msg of dummyMessages) {
+                const newMessage = new Message({ ...msg, room });
+                await newMessage.save();
+                console.log(`Message added from ${newMessage.from}: "${newMessage.text}"`);
+            }
+        } else {
+            console.log('Messages already exist, not adding test messages.');
+        }
+    } catch (err) {
+        console.error('Error adding dummy messages: ' + err.message);
+    }
+}
+
+addDummyMessagesMongoDB();
 
 // Test function that adds default users and reviews to the database if the database is empty
 // This function also creates the database (via the first input) if it isnt already there 
