@@ -22,6 +22,23 @@ const dummyReviews = [
     { igdbId: 69696, gameName: "FC 24", review: "Too many Sweats", rating: 5 },
     { igdbId: 69696, gameName: "FC 24", review: "Same game as last year", rating: 2 },
     { igdbId: 69696, gameName: "FC 24", review: "Can't go wrong with football", rating: 5 }
+
+    //code to test the lazy render of reviews in GameDetailsPage.jsx
+    // ,{ igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3}
 ];
 
 const dummyGames = [
@@ -38,6 +55,9 @@ const dummyMessages = [
     { from: 'xyz', text: 'For sure', timestamp: new Date('2024-01-10T10:05:00') },
 ];
 
+
+//The following are functions that add default users, reviews, games, and messages to the database if the database is empty
+//function to add test users
 async function seedUsers() {
     try {
         const userCount = await User.countDocuments();
@@ -50,8 +70,11 @@ async function seedUsers() {
                 const hashedPassword = await bcrypt.hash(userData.password, 10);
                 const newUser = new User({ ...userData, password: hashedPassword });
                 await newUser.save();
+                //saving the mongo document IDs for each user added, this is used for adding the reviews after this
                 userIds.push(newUser._id);
+                //saving the usernames, also to be added to the review, for ease of access to the username in the review components
                 userNameStrings.push(newUser.username);
+                //console message validating the user being entered into the database
                 console.log('User added: ' + newUser.username);
             }
         } else {
@@ -67,16 +90,26 @@ async function seedUsers() {
     }
 }
 
+
+//// Testing code to override review model restrictions
+// userIds = ['69d83e88b2d4b27c6972ff4f'];
+// userNameStrings = ['123'];
+
+//function to add test reviews
 async function seedReviews(userIds, userNameStrings) {
     try {
         const reviewCount = await Review.countDocuments();
 
-        if (reviewCount === 0 && userIds.length > 0 && userNameStrings.length > 0) {
+        if (reviewCount === 0 && userIds.length > 0 && userNameStrings.length > 0) { //making sure that there is users
+        // if (true){ //used to override above condition
             console.log('Adding test reviews to db ...');
+
+            //connecting the dummy reviews to alternating dummy users in the dictionary
             const reviews = dummyReviews.map((review, index) => ({
+                //getting all the fields from the dummy review, then adding a mongo document userID
                 ...review,
-                userId: userIds[index % userIds.length],
-                userName: userNameStrings[index % userNameStrings.length]
+                userId: userIds[index % userIds.length],  //alternating by amount of users
+                userName: userNameStrings[index % userNameStrings.length]  //alternating by amount of users
             }));
 
             for (const review of reviews) {
@@ -92,6 +125,7 @@ async function seedReviews(userIds, userNameStrings) {
     }
 }
 
+//function to add test games
 async function seedGames() {
     try {
         const gameCount = await Game.countDocuments();
@@ -111,6 +145,7 @@ async function seedGames() {
     }
 }
 
+//function to add test messages
 async function seedMessages() {
     try {
         const messageCount = await Message.countDocuments();
