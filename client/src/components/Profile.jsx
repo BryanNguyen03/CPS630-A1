@@ -18,7 +18,7 @@ const decodeUsernameParam = (value) => {
   }
 };
 
-function Profile({ currentUser, token }) {
+function Profile({ currentUser, token, showToast }) {
   const { username: usernameParam } = useParams();
 
   const [itemList, setItemList] = useState([]);
@@ -90,12 +90,16 @@ function Profile({ currentUser, token }) {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (response.ok) {
-        fetchProfileReviews();
+        await fetchProfileReviews();
+        showToast?.('Review deleted successfully.', 'success');
       } else {
+        const data = await response.json().catch(() => ({}));
+        showToast?.(data.message || 'Failed to delete review. Please try again.', 'error');
         console.error('Error deleting review');
       }
     } catch (error) {
       console.error('Error deleting review:', error);
+      showToast?.('An error occurred while deleting the review.', 'error');
     }
   };
 
@@ -104,15 +108,15 @@ function Profile({ currentUser, token }) {
       return;
     }
     if (!selectedReviewId) {
-      alert('Please select a review to update');
+      showToast?.('Please select a review to update.', 'error');
       return;
     }
     if (!updatedReview.trim() && !updatedRating) {
-      alert('Please enter at least one field to update');
+      showToast?.('Please enter at least one field to update.', 'error');
       return;
     }
     if (updatedRating && (isNaN(updatedRating) || updatedRating < 1 || updatedRating > 5)) {
-      alert('Rating must be a number between 1 and 5');
+      showToast?.('Rating must be a number between 1 and 5.', 'error');
       return;
     }
 
@@ -133,12 +137,15 @@ function Profile({ currentUser, token }) {
         setUpdatedReview('');
         setUpdatedRating('');
         setSelectedReviewId('');
-        fetchProfileReviews();
+        await fetchProfileReviews();
+        showToast?.('Review updated successfully.', 'success');
       } else {
-        alert('Failed to update review. Please try again.');
+        const data = await response.json().catch(() => ({}));
+        showToast?.(data.message || 'Failed to update review. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error updating review:', error);
+      showToast?.('An error occurred while updating the review.', 'error');
     }
   };
 
