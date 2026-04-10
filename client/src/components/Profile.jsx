@@ -144,6 +144,12 @@ function Profile({ currentUser, token }) {
 
   return (
     <div className="page-shell">
+      {!isOwnProfile && (
+        <Link to="/community" className="btn-secondary w-fit">
+          &lt;- Back to Community
+        </Link>
+      )}
+
       <h2 className="page-title">{isOwnProfile ? 'My Profile' : `${viewedUsername}'s Profile`}</h2>
       <p className="page-subtitle">
         {isOwnProfile
