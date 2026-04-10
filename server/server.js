@@ -54,6 +54,10 @@ db.on('open', function() {
 });
 
 
+//getting the functionality from the game database API
+const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
+
+
 //creating test users for the site, this is before they are entered into the database
 let dummyUsers = [
     { username: '123', password: '123' },
@@ -62,10 +66,7 @@ let dummyUsers = [
 ];
 
 
-// Create reviews if they don't already exist in the database
-//simple list of reviews to demo the idea
-const { fetchAndCacheGames, fetchAndCacheGameById } = require('./services/igdbService');
-
+//simple list of reviews
 let reviews = [                                                                                   //remove the object ID here and just use username since we dont have these IDs on a fresh run
     { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
     { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
@@ -137,8 +138,8 @@ async function addDummyDataToMongoDB() {
 }
 addDummyDataToMongoDB();
 
-// Initialize the Game cache from IGDB
 
+//
 let dummyGames = [
     { igdbId: 69696, name: "FC 24", summary: "A great football game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qqa.jpg", rating: 85, releaseDate: new Date() },
     { igdbId: 12345, name: "Minecraft", summary: "Sandbox survival game", coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co8fu7.jpg", rating: 90, releaseDate: new Date() }
@@ -161,6 +162,7 @@ async function addDummyGamesToMongoDB() {
 }
 addDummyGamesToMongoDB();
 
+// Initialize the Game cache from IGDB API
 fetchAndCacheGames();
 
 
@@ -278,7 +280,7 @@ app.post('/api/items', authenticateToken, async (req, res) => {
 
 
 //route to update reviews based on the game name, user input also determines the updates (UPDATE), UPDATE an item 
-app.patch('/api/items/:igdbId', async (req, res) => {
+app.patch('/api/items/:igdbId', authenticateToken, async (req, res) => {
 
     try {
         const { igdbId } = req.params;
