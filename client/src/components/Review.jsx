@@ -68,7 +68,7 @@ const Review = ({ review, linkMode = 'none', showUserName = true }) => {
         <p>
           <strong>User:</strong>{' '}
           {shouldLinkToProfile ? (
-            <Link to={`/users/${encodeURIComponent(review.userName)}`}>{userName}</Link>
+            <Link to={`/user/${encodeURIComponent(review.userName)}`}>{userName}</Link>
           ) : (
             userName
           )}

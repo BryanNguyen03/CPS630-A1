@@ -1,50 +1,164 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import Chat from './Chat';
+import ReviewList from './ReviewList';
 
-function Profile() {
+const socketServerUrl = 'http://localhost:8080';
+const activeChatPartnerStorageKey = 'activeChatPartnerUsername';
+
+const decodeUsernameParam = (value) => {
+  if (!value) {
+    return '';
+  }
+
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+function Profile({ currentUser, token }) {
+  const { username: usernameParam } = useParams();
+
   const [itemList, setItemList] = useState([]);
   const [selectedReviewId, setSelectedReviewId] = useState('');
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [chatPartnerUsername, setChatPartnerUsername] = useState('');
+  const authToken = token || localStorage.getItem('authToken') || '';
+  const authUsername = currentUser?.username || localStorage.getItem('authUsername') || '';
+  const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
+  const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
+  const activeChatUsername = isOwnProfile ? chatPartnerUsername : viewedUsername;
 
-  const token = localStorage.getItem('authToken');
-  const userId = token ? JSON.parse(atob(token.split('.')[1])).id : null;
-
-  const fetchUserReviews = async () => {
-    if (!userId || !token) return;
-    try {
-      const response = await fetch(`http://localhost:8080/api/items/user/${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setItemList(data);
-      }
-    } catch (error) {
-      console.error('Error fetching user reviews:', error);
+  const fetchProfileReviews = useCallback(async () => {
+    if (!viewedUsername) {
+      setItemList([]);
+      return;
     }
-  };
+
+    setIsLoadingReviews(true);
+    try {
+      const response = await fetch(`${socketServerUrl}/api/items`);
+      if (!response.ok) {
+        throw new Error(`Failed to load reviews for ${viewedUsername}`);
+      }
+
+      const data = await response.json();
+      const filteredReviews = data
+        .filter((item) => item.userName === viewedUsername)
+        .reverse();
+
+      setItemList(filteredReviews);
+    } catch (error) {
+      console.error('Error fetching profile reviews:', error);
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  }, [viewedUsername]);
 
   useEffect(() => {
-    fetchUserReviews();
-  }, []);
+    fetchProfileReviews();
+    setSelectedReviewId('');
+    setUpdatedReview('');
+    setUpdatedRating('');
+  }, [fetchProfileReviews]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const setPartnerIfActive = (username) => {
+      if (!isCancelled) {
+        setChatPartnerUsername(username || '');
+      }
+    };
+
+    if (!viewedUsername) {
+      setPartnerIfActive('');
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    if (!isOwnProfile) {
+      setPartnerIfActive(viewedUsername);
+      if (authUsername && viewedUsername !== authUsername) {
+        localStorage.setItem(activeChatPartnerStorageKey, viewedUsername);
+      }
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    const storedPartner = localStorage.getItem(activeChatPartnerStorageKey) || '';
+    if (storedPartner && storedPartner !== authUsername) {
+      setPartnerIfActive(storedPartner);
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    const resolveDefaultPartner = async () => {
+      if (!authUsername) {
+        setPartnerIfActive('');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${socketServerUrl}/api/users`);
+        if (!response.ok) {
+          throw new Error('Failed to load users for chat partner resolution');
+        }
+
+        const users = await response.json();
+        const fallbackPartner =
+          users
+            .map((user) => user.username)
+            .find((username) => Boolean(username) && username !== authUsername) || '';
+
+        setPartnerIfActive(fallbackPartner);
+        if (fallbackPartner) {
+          localStorage.setItem(activeChatPartnerStorageKey, fallbackPartner);
+        }
+      } catch (error) {
+        console.error('Error resolving default chat partner:', error);
+        setPartnerIfActive('');
+      }
+    };
+
+    resolveDefaultPartner();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [authUsername, isOwnProfile, viewedUsername]);
 
   const deleteItem = async (id) => {
+    if (!isOwnProfile || !authToken) {
+      return;
+    }
+
     try {
-      const response = await fetch(`http://localhost:8080/api/items/${id}`, {
+      const response = await fetch(`${socketServerUrl}/api/items/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${authToken}` }
       });
       if (response.ok) {
-        fetchUserReviews();
+        fetchProfileReviews();
       } else {
-        console.error('Error deleting item');
+        console.error('Error deleting review');
       }
     } catch (error) {
-      console.error('Error deleting item:', error);
+      console.error('Error deleting review:', error);
     }
   };
 
   const updateItem = async () => {
+    if (!isOwnProfile || !authToken) {
+      return;
+    }
     if (!selectedReviewId) {
       alert('Please select a review to update');
       return;
@@ -59,11 +173,11 @@ function Profile() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/items/review/${selectedReviewId}`, {
+      const response = await fetch(`${socketServerUrl}/api/items/review/${selectedReviewId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${authToken}`
         },
         body: JSON.stringify({
           ...(updatedReview.trim() && { review: updatedReview }),
@@ -75,43 +189,61 @@ function Profile() {
         setUpdatedReview('');
         setUpdatedRating('');
         setSelectedReviewId('');
-        fetchUserReviews();
+        fetchProfileReviews();
       } else {
         alert('Failed to update review. Please try again.');
       }
     } catch (error) {
-      console.error('Error updating item:', error);
+      console.error('Error updating review:', error);
     }
   };
 
+  if (!viewedUsername) {
+    return (
+      <div className="page">
+        <h2>Profile</h2>
+        <p>
+          <Link to="/login">Log in</Link> to access your profile.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="page">
-      <h2>My Reviews</h2>
-      <p>View and manage your reviews</p>
+      <h2>{isOwnProfile ? 'My Profile' : `${viewedUsername}'s Profile`}</h2>
+      <p>
+        {isOwnProfile
+          ? `View and manage your reviews, and browse your chats${activeChatUsername ? ` with ${activeChatUsername}` : ''}.`
+          : `Read ${viewedUsername}'s reviews and chat here.`}
+      </p>
 
-      <div className="reviews-list">
-        {itemList.length === 0 ? (
-          <p className="no-items">You haven't written any reviews yet.</p>
+      <div className="items-container">
+        <h3>Reviews ({itemList.length})</h3>
+        {isLoadingReviews ? (
+          <p className="no-items">Loading reviews...</p>
+        ) : isOwnProfile ? (
+          itemList.length === 0 ? (
+            <p className="no-items">You haven't written any reviews yet.</p>
+          ) : (
+            <ul>
+              {itemList.map((item) => (
+                <li key={item._id}>
+                  <span>
+                    {item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5
+                  </span>
+                  <button onClick={() => deleteItem(item._id)}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          )
         ) : (
-          itemList.map(item => (
-            <div key={item._id} className="game-card" style={{ marginBottom: '15px' }}>
-              <div className="game-header">
-                <strong>{item.gameName}</strong>
-                <span className={`rating-badge rate-${item.rating}`}>
-                  {item.rating}/5
-                </span>
-              </div>
-              <div className="game-body">
-                <p>"{item.review}"</p>
-              </div>
-              <button
-                onClick={() => deleteItem(item._id)}
-                style={{ marginTop: '8px' }}
-              >
-                Delete
-              </button>
-            </div>
-          ))
+          <ReviewList
+            reviews={itemList}
+            linkMode="game"
+            showUserName={false}
+            emptyMessage="This user has not posted any reviews yet."
+          />
         )}
 
         {itemList.length > 0 && (
@@ -146,6 +278,13 @@ function Profile() {
             </div>
           )}
       </div>
+
+      <Chat
+        viewedUsername={activeChatUsername}
+        authUsername={authUsername}
+        authToken={authToken}
+        isOwnProfile={isOwnProfile}
+      />
     </div>
   );
 }
