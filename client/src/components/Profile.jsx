@@ -30,7 +30,8 @@ function Profile({ currentUser, token }) {
   const authUsername = currentUser?.username || localStorage.getItem('authUsername') || '';
   const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
   const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
-  const showUpdateReviewSection = Boolean(isOwnProfile && authToken && itemList.length > 0);
+  const canManageReviews = Boolean(isOwnProfile && authToken);
+  const showUpdateReviewSection = Boolean(canManageReviews && itemList.length > 0);
 
   const fetchProfileReviews = useCallback(async () => {
     if (!viewedUsername) {
@@ -144,7 +145,9 @@ function Profile({ currentUser, token }) {
       <h2>{isOwnProfile ? 'My Profile' : `${viewedUsername}'s Profile`}</h2>
       <p>
         {isOwnProfile
-          ? 'View and manage your reviews, and chat with anyone on your profile page.'
+          ? canManageReviews
+            ? 'View and manage your reviews, and chat with anyone on your profile page.'
+            : 'View your reviews and chat with anyone on your profile page. Log in to manage your reviews.'
           : `Read ${viewedUsername}'s reviews and chat here.`}
       </p>
 
@@ -162,7 +165,7 @@ function Profile({ currentUser, token }) {
                   <span>
                     {item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5
                   </span>
-                  <button onClick={() => deleteItem(item._id)}>Delete</button>
+                  {canManageReviews && <button onClick={() => deleteItem(item._id)}>Delete</button>}
                 </li>
               ))}
             </ul>
