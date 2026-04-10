@@ -74,6 +74,23 @@ let reviews = [                                                                 
     { igdbId: 69696, gameName: "FC 24", review:"Too many Sweats", rating: 5},
     { igdbId: 69696, gameName: "FC 24", review:"Same game as last year", rating:2},
     { igdbId: 69696, gameName: "FC 24", review:"Can't go wrong with football", rating:5}
+
+    //code to test the lazy render of reviews in GameDetailsPage.jsx
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Ruined my life", rating: 5},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Enjoyed playing proclubs; however, didn't like the minecoins",   rating: 4},
+    // { igdbId: 12345, gameName: "Minecraft", review:"Binge the game for a week, hiatus, always come back", rating: 3}
 ];                                  
 
 
@@ -105,10 +122,15 @@ async function addDummyDataToMongoDB() {
         }
 
 
+        // Testing code to override review model restrictions
+        // userIds = ['69d83e88b2d4b27c6972ff4f'];
+        // userNameStrings = ['123'];
+
         //adding dummy reviews only if there is none in the DB
         const reviewCount = await Review.countDocuments();
 
         if (reviewCount === 0 && userIds.length > 0 && userNameStrings.length > 0) { //making sure that there is users
+        // if (true){ //used to override above condition
             console.log('Adding test reviews to db ...');
             
 

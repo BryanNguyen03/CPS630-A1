@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import ReviewList from './ReviewList';
 import { getNormalizedRating, getRatingBadgeClasses } from '../utils/ratingStyles';
 
@@ -13,8 +13,16 @@ function GameDetailsPage({ token, currentUser }) {
   const [newReviewText, setNewReviewText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+
+
   const [sortBy, setSortBy] = useState('highest'); // 'highest' or 'lowest'
-  const [ratingFilter, setRatingFilter] = useState('all'); // 'all' or '1','2','3','4','5'
+  const [ratingFilter, setRatingFilter] = useState('all'); //'all' or '1','2','3','4','5'
+
+  const [loadedCount, setLoadedCount] = useState(10); // Initially load 10 reviews
+  const [isLoading, setIsLoading] = useState(false); // Prevents duplicate batch requests
+  const batchSize = 10; // Load 10 reviews per batch
+  const sentinelRef = useRef(null); // Ref to trigger loading when scrolled into view
 
   const gameId = parseInt(id, 10);
 
@@ -39,6 +47,61 @@ function GameDetailsPage({ token, currentUser }) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+
+
+  //filtering and sorting the reviews based on user selections
+  //Since it is not in state or useEffect, it updates everytime the page re-renders / at every new state
+  const filteredAndSortedReviews = reviews
+    .filter((r) => ratingFilter === 'all' || r.rating === parseInt(ratingFilter, 10))
+    .sort((a, b) => {
+      if (sortBy === 'highest') {
+        return (b.rating || 0) - (a.rating || 0);
+      } else {
+        return (a.rating || 0) - (b.rating || 0);
+      }
+    });
+
+  // Get only the reviews currently loaded for display (For initial load)
+  const displayedReviews = filteredAndSortedReviews.slice(0, loadedCount);
+
+  // Reset loaded count when sort/filter changes
+  useEffect(() => {
+    setLoadedCount(10);
+  }, [ratingFilter, sortBy]);
+
+  // Set up Intersection Observer for infinite scroll on reviews
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Trigger load when sentinel becomes visible and conditions are met
+        if (
+          entries[0].isIntersecting &&
+          !isLoading &&
+          loadedCount < filteredAndSortedReviews.length
+        ) {
+          setIsLoading(true);
+          // Simulate network delay for better UX
+          setTimeout(() => {
+            // Add next batch, but don't exceed total reviews
+            setLoadedCount((prev) => Math.min(prev + batchSize, filteredAndSortedReviews.length));
+            setIsLoading(false);
+          }, 100);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => {
+      if (sentinelRef.current) {
+        observer.unobserve(sentinelRef.current);
+      }
+    };
+  }, [loadedCount, filteredAndSortedReviews.length, isLoading]);
 
   // Check if the current logged-in user already has a review for this game
   const userAlreadyReviewed = token && currentUser?.username
@@ -232,20 +295,23 @@ function GameDetailsPage({ token, currentUser }) {
 
         {/* Filtered and sorted reviews */}
         <ReviewList
-          // Filtering review based on the user selection for the ratings
-          reviews={reviews
-            .filter((r) => ratingFilter === 'all' || r.rating === parseInt(ratingFilter, 10))
-            .sort((a, b) => {
-              if (sortBy === 'highest') {
-                return (b.rating || 0) - (a.rating || 0);
-              } else {
-                return (a.rating || 0) - (b.rating || 0);
-              }
-            })
-          }
+          // Pass only the loaded reviews for display (lazy loading handled here)
+          reviews={displayedReviews}
           linkMode="profile"
           emptyMessage="No reviews found with selected filters."
         />
+
+        {/* Sentinel element - when scrolled into view, triggers loading next batch */}
+        {loadedCount < filteredAndSortedReviews.length && (
+          <div ref={sentinelRef} style={{ height: '20px', margin: '20px 0' }} />
+        )}
+
+        {/* Loading indicator - shows while fetching next batch */}
+        {isLoading && loadedCount < filteredAndSortedReviews.length && (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <p style={{ color: '#999' }}>Loading more reviews...</p>
+          </div>
+        )}
       </div>
     </div>
   );
