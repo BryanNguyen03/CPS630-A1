@@ -232,6 +232,7 @@ function GameDetailsPage({ token, currentUser }) {
 
         {/* Filtered and sorted reviews */}
         <ReviewList
+          // Filtering review based on the user selection for the ratings
           reviews={reviews
             .filter((r) => ratingFilter === 'all' || r.rating === parseInt(ratingFilter, 10))
             .sort((a, b) => {

@@ -265,8 +265,8 @@ app.post('/api/items', authenticateToken, async (req, res) => {
             gameName,
             review,
             rating,
-            userId: req.user.id,       // from JWT
-            userName: req.user.username // from JWT — never trust the client for this
+            userId: req.user.id,       //from JWT
+            userName: req.user.username //from JWT, not using client to validate this
         });
 
         await newReview.save();
@@ -378,15 +378,11 @@ app.get('/api/games/:id', async (req, res) => {
 
 
 
-
-
-
-
 //Real time messaging routes
 
 app.get('/api/users', async (req, res) => {
     try {
-        const users = await User.find({}, 'username');       //will need to figure out what this reutrns ---
+        const users = await User.find({}, 'username');     
         res.status(200).json(users);
     } catch (err) {
         console.error('Error fetching users', err);
@@ -488,7 +484,9 @@ app.post('/api/login', async (req, res) => {
 });
 
 
+
 //Socket io code dealing with the socket creation, receiving and sending messages, and closing sockets
+//Unauthenticated, because we want to let everyone see the messages, however, it requires login for messaging
 io.on('connection', (socket) => {
     console.log('Socket connected:', socket.id);
 
