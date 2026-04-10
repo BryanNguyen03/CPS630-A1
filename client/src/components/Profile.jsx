@@ -31,11 +31,13 @@ function Profile({ currentUser, token }) {
   const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
   const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
   const canManageReviews = Boolean(isOwnProfile && authToken);
-  const showUpdateReviewSection = Boolean(canManageReviews && itemList.length > 0);
+  const showUpdateReviewSection = Boolean(canManageReviews && !isLoadingReviews && itemList.length > 0);
 
   const fetchProfileReviews = useCallback(async () => {
+    setItemList([]);
+
     if (!viewedUsername) {
-      setItemList([]);
+      setIsLoadingReviews(false);
       return;
     }
 
