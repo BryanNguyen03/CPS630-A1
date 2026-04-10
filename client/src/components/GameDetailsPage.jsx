@@ -4,9 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import ReviewList from './ReviewList';
 import { getNormalizedRating, getRatingBadgeClasses } from '../utils/ratingStyles';
 
-function GameDetailsPage({ token, currentUser }) {
-  
-  //use state varaibles for rendering the page correctly
+function GameDetailsPage({ token, currentUser, showToast }) {
   const { id } = useParams();
   const [game, setGame] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -128,11 +126,15 @@ function GameDetailsPage({ token, currentUser }) {
   const submitReview = async () => {
     //input validation
     if (!newReviewText.trim() || !newRating) {
-      setSubmitError('Please fill in both the review and rating.');
+      const errorMessage = 'Please fill in both the review and rating.';
+      setSubmitError(errorMessage);
+      showToast?.(errorMessage, 'error');
       return;
     }
     if (isNaN(newRating) || newRating < 1 || newRating > 5) {
-      setSubmitError('Rating must be between 1 and 5.');
+      const errorMessage = 'Rating must be between 1 and 5.';
+      setSubmitError(errorMessage);
+      showToast?.(errorMessage, 'error');
       return;
     }
 
@@ -160,13 +162,18 @@ function GameDetailsPage({ token, currentUser }) {
         setNewReviewText('');
         setNewRating('');
         await fetchData(); // Refresh reviews
+        showToast?.('Review added successfully.', 'success');
       } else {
-        const data = await response.json();
-        setSubmitError(data.message || 'Failed to submit review. Please try again.');
+        const data = await response.json().catch(() => ({}));
+        const errorMessage = data.message || 'Failed to submit review. Please try again.';
+        setSubmitError(errorMessage);
+        showToast?.(errorMessage, 'error');
       }
     } catch (error) {
       console.error('Error submitting review:', error);
-      setSubmitError('An error occurred. Please try again.');
+      const errorMessage = 'An error occurred. Please try again.';
+      setSubmitError(errorMessage);
+      showToast?.(errorMessage, 'error');
     } finally {
       setSubmitting(false);
     }
