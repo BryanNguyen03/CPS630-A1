@@ -40,10 +40,10 @@ function NavBar({ token, onLogout, currentUser }) {
         Review Search
       </button>
       <button
-        className={isActive('/user') ? 'active' : ''}
-        onClick={() => navigate('/user')}
+        className={isActive('/community') ? 'active' : ''}
+        onClick={() => navigate('/community')}
       >
-        User Page
+        Community
       </button>
       <button
         className={isActive('/about') ? 'active' : ''}

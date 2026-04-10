@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import './App.css'
 import NavBar from './components/NavBar'
 import Profile from './components/Profile'
@@ -9,8 +9,7 @@ import RegisterPage from './components/RegisterPage'
 import LoginPage from './components/LoginPage'
 import GamesPage from './components/GamesPage'
 import GameDetailsPage from './components/GameDetailsPage'
-import UserPage from './components/UserPage'
-import UserProfilePlaceholderPage from './components/UserProfilePlaceholderPage'
+import CommunityPage from './components/CommunityPage'
 
 // Protected route component
 function ProtectedRoute({ children, token }) {
@@ -20,6 +19,11 @@ function ProtectedRoute({ children, token }) {
   return children;
 }
 
+function LegacyUserProfileRedirect() {
+  const { username } = useParams();
+  return <Navigate to={`/user/${encodeURIComponent(username || '')}`} replace />;
+}
+
 // App component where all of our upper level components are located, these include the nav bar and 3 pages
 function App() {
   const [itemList, setItemList] = useState([]);
@@ -27,7 +31,6 @@ function App() {
 
 
   const [userList, setUserList] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
   const [currentUser, setCurrentUser] = useState({ username: localStorage.getItem('authUsername') || '' });
   
   
@@ -52,9 +55,6 @@ function App() {
       if (response.ok) {
         const data = await response.json();
         setUserList(data);
-        if (!selectedUser && data.length > 0) {
-          setSelectedUser(data[0]);
-        }
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -93,7 +93,7 @@ function App() {
           path="/MyProfile"
           element={
             <ProtectedRoute token={token}>
-              <Profile />
+              <Profile token={token} currentUser={currentUser} />
             </ProtectedRoute>
           }
         />
@@ -122,19 +122,23 @@ function App() {
           element={<RegisterPage />}
         />
         <Route
-          path="/user"
+          path="/community"
           element={
-            <UserPage
+            <CommunityPage
               currentUser={currentUser}
-              selectedUser={selectedUser}
               users={userList}
-              onSelectedUserChange={setSelectedUser}
-              token={token}
-              itemList={itemList}
             />
           }
         />
-        <Route path="/users/:username" element={<UserProfilePlaceholderPage />} />
+        <Route
+          path="/user/:username"
+          element={<Profile token={token} currentUser={currentUser} />}
+        />
+        <Route
+          path="/users/:username"
+          element={<LegacyUserProfileRedirect />}
+        />
+        <Route path="/user" element={<Navigate to="/community" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

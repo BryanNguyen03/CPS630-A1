@@ -393,22 +393,18 @@ app.get('/api/users', async (req, res) => {
 });
 
 app.get('/api/messages', async (req, res) => {
-    const { from, to } = req.query;
-    if (!from || !to) {
-        return res.status(400).json({ error: 'Both from and to query values are required' });
+    const { room } = req.query;
+
+    if (!room) {
+        return res.status(400).json({ error: 'room query value is required' });
     }
 
     try {
-        const messages = await Message.find({
-            $or: [
-                { from: from, to: to },
-                { from: to, to: from }
-            ]
-        }).sort({ timestamp: 1 });
-        res.status(200).json(messages);
+        const roomMessages = await Message.find({ room }).sort({ timestamp: 1 });
+        return res.status(200).json(roomMessages);
     } catch (err) {
-        console.error('Error fetching messages', err);
-        res.status(500).json({ error: 'Failed to load messages' });
+        console.error('Error fetching room messages', err);
+        return res.status(500).json({ error: 'Failed to load room messages' });
     }
 });
 
@@ -502,14 +498,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chatMessage', async (message) => {
-        if (!message || !message.from || !message.to || !message.text) {
+        if (!message || !message.from || !message.room || !message.text) {
             return;
         }
 
-        const room = [message.from, message.to].sort().join(':');
+        const room = message.room;
         const savedMessage = new Message({
             from: message.from,
-            to: message.to,
+            room,
             text: message.text,
             timestamp: message.timestamp ? new Date(message.timestamp) : new Date()
         });
@@ -522,7 +518,7 @@ io.on('connection', (socket) => {
 
         io.to(room).emit('chatMessage', {
             from: message.from,
-            to: message.to,
+            room,
             text: message.text,
             timestamp: savedMessage.timestamp
         });
