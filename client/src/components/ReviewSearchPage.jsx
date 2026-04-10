@@ -8,10 +8,24 @@ function ReviewSearchPage({ itemList, onRefresh }) {
   const [searchTermId, setSearchTermId] = useState('');
   const [searchedReviewId, setSearchedReviewId] = useState(0);
   const [itemListSecond, setItemListSecond] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const RESULTS_PER_PAGE = 4;
 
   const gameSearchResults = itemList.filter((item) =>
     item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(gameSearchResults.length / RESULTS_PER_PAGE);
+  const paginatedResults = gameSearchResults.slice(
+    currentPage * RESULTS_PER_PAGE,
+    currentPage * RESULTS_PER_PAGE + RESULTS_PER_PAGE
+  );
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(0); // Reset to first page on new search
+  };
 
   const fetchItemsByReviewId = async (id) => {
     setItemListSecond([]);
@@ -43,10 +57,10 @@ function ReviewSearchPage({ itemList, onRefresh }) {
             type="text"
             className="input-field"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="Search for a review by Game..."
           />
-          <button className="btn-primary md:w-auto" onClick={() => onRefresh()}>Search (GET)</button>
+          <button className="btn-primary md:w-auto" onClick={() => { onRefresh(); setCurrentPage(0); }}>Search (GET)</button>
         </div>
 
         <h3 className="text-lg">Search Results ({gameSearchResults.length})</h3>
@@ -56,20 +70,44 @@ function ReviewSearchPage({ itemList, onRefresh }) {
             {searchTerm ? 'No reviews found matching your search.' : 'Enter a search term to find reviews.'}
           </p>
         ) : (
-          <div className="space-y-3">
-            {gameSearchResults.map((item) => (
-              <article key={item._id} className="card space-y-2">
-                <div className="flex items-start justify-between gap-3">
-                  <strong className="text-base text-text-primary">{item.gameName}</strong>
-                  <span className={getRatingBadgeClasses(item.rating)}>
-                    {item.rating}/5
-                  </span>
-                </div>
-                <p className="text-sm text-text-muted">"{item.review}"</p>
-                <p className="font-mono text-xs text-text-muted">Review ID: {item._id}</p>
-              </article>
-            ))}
-          </div>
+          <>
+            <div className="space-y-3">
+              {paginatedResults.map((item) => (
+                <article key={item._id} className="card space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <strong className="text-base text-text-primary">{item.gameName}</strong>
+                    <span className={getRatingBadgeClasses(item.rating)}>
+                      {item.rating}/5
+                    </span>
+                  </div>
+                  <p className="text-sm text-text-muted">"{item.review}"</p>
+                  <p className="font-mono text-xs text-text-muted">Review ID: {item._id}</p>
+                </article>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  className="btn-primary md:w-auto"
+                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                  disabled={currentPage === 0}
+                >
+                  ← Previous
+                </button>
+                <span className="text-sm text-text-muted">
+                  Page {currentPage + 1} of {totalPages}
+                </span>
+                <button
+                  className="btn-primary md:w-auto"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
