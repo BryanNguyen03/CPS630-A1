@@ -1,3 +1,4 @@
+//utility functions for the game ratings
 const normalizeRating = (value) => {
   const numericValue = Number(value);
 
@@ -8,6 +9,7 @@ const normalizeRating = (value) => {
   return Math.max(0, Math.min(5, Math.round(numericValue)));
 };
 
+//Set colours and styling for the different ratings
 const ratingBadgeClasses = {
   0: 'pill-badge border-edge bg-bg-700 text-text-muted',
   1: 'pill-badge border-rose-400/35 bg-rose-500/15 text-rose-200',
