@@ -27,8 +27,8 @@ export const getAverageRatingFromReviews = (reviews = []) => {
   };
 };
 
+// used on GamesPage to compute average rating and count per game
 export const buildReviewStatsByGameId = (reviews = []) => {
-  // Used on GamesPage to compute average rating and count per game
   const statsMap = new Map();
 
   reviews.forEach((review) => {

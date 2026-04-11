@@ -140,7 +140,7 @@ function App() {
 
 
   //Main elements for the site, including the main routes
-  // Pass fetchItems to review-mutation pages so ratings stay synchronized across routes.
+  // pass fetchItems to review-mutable pages so ratings stay synchronized across routes
   return (
     <div className="app-shell">
       <h1 className="app-title">ReviewLog</h1>

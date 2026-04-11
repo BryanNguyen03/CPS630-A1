@@ -122,12 +122,12 @@ function GameDetailsPage({ token, currentUser, showToast, onReviewsRefresh }) {
     ? reviews.some(r => r.userName === currentUser.username)
     : false;
 
+  // recompute average rating and review count whenever reviews change
   const {
     averageRating: averageUserRating,
     reviewCount,
     averageDisplayValue: averageUserRatingDisplay
   } = useMemo(() => getAverageRatingFromReviews(reviews), [reviews]);
-  // Uses shared average logic so detail and list pages render matching rating data.
 
   
   //handler function for submitting a review

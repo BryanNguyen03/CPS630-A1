@@ -50,7 +50,7 @@ function GamesPage({ itemList = [] }) {
   //only render games up to loadedCount (lazy rendering)
   const displayedGames = filteredGames.slice(0, loadedCount);
 
-  // Aggregate user review stats per game so ratings match GameDetailsPage.
+  // recompute review stats (average rating and review count) by game ID whenever the full item list changes, so that badges on the list page stay in sync with reviews
   const reviewStatsByGameId = useMemo(() => buildReviewStatsByGameId(itemList), [itemList]);
 
   //monitoring the intersection observer
@@ -118,7 +118,7 @@ function GamesPage({ itemList = [] }) {
         ) : (
           //render only the games currently loaded (displayedGames only)
           displayedGames.map((item) => {
-            // Keep card rating output synchronized with GameDetailsPage averages.
+            // keep card rating average synchronized with GameDetailsPage
             const gameReviewStats = reviewStatsByGameId.get(Number(item.igdbId));
             const averageUserRating = gameReviewStats?.averageRating ?? null;
             const averageUserRatingDisplay = gameReviewStats?.averageDisplayValue ?? null;

@@ -117,7 +117,7 @@ function Profile({ currentUser, token, showToast, onReviewsRefresh }) {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (response.ok) {
-        // Refresh both profile data and app-level review cache so game-card ratings stay in sync.
+        // refresh profile reviews on delete
         await Promise.all([fetchProfileReviews(), onReviewsRefresh?.()]);
         showToast?.('Review deleted successfully.', 'success');
       } else {
@@ -165,7 +165,7 @@ function Profile({ currentUser, token, showToast, onReviewsRefresh }) {
         setUpdatedReview('');
         setUpdatedRating('');
         setSelectedReviewId('');
-        // Refresh both profile data and app-level review cache so game-card ratings stay in sync.
+        // refresh profile reviews on edit
         await Promise.all([fetchProfileReviews(), onReviewsRefresh?.()]);
         closeEditModal();
         showToast?.('Review updated successfully.', 'success');
