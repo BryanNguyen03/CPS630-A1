@@ -20,7 +20,7 @@ const decodeUsernameParam = (value) => {
   }
 };
 
-function Profile({ currentUser, token, showToast }) {
+function Profile({ currentUser, token, showToast, onReviewsRefresh }) {
   const { username: usernameParam } = useParams();
 
   const [itemList, setItemList] = useState([]);
@@ -117,7 +117,8 @@ function Profile({ currentUser, token, showToast }) {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (response.ok) {
-        await fetchProfileReviews();
+        // Refresh both profile data and app-level review cache so game-card ratings stay in sync.
+        await Promise.all([fetchProfileReviews(), onReviewsRefresh?.()]);
         showToast?.('Review deleted successfully.', 'success');
       } else {
         const data = await response.json().catch(() => ({}));
@@ -145,10 +146,6 @@ function Profile({ currentUser, token, showToast }) {
       showToast?.('Please enter at least one field to update.', 'error');
       return;
     }
-    if (updatedRating && (isNaN(updatedRating) || updatedRating < 1 || updatedRating > 5)) {
-      showToast?.('Rating must be a number between 1 and 5.', 'error');
-      return;
-    }
 
     // send patch request to update the review
     try {
@@ -168,7 +165,8 @@ function Profile({ currentUser, token, showToast }) {
         setUpdatedReview('');
         setUpdatedRating('');
         setSelectedReviewId('');
-        await fetchProfileReviews();
+        // Refresh both profile data and app-level review cache so game-card ratings stay in sync.
+        await Promise.all([fetchProfileReviews(), onReviewsRefresh?.()]);
         closeEditModal();
         showToast?.('Review updated successfully.', 'success');
       } else {

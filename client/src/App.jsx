@@ -140,6 +140,7 @@ function App() {
 
 
   //Main elements for the site, including the main routes
+  // Pass fetchItems to review-mutation pages so ratings stay synchronized across routes.
   return (
     <div className="app-shell">
       <h1 className="app-title">ReviewLog</h1>
@@ -158,7 +159,7 @@ function App() {
           path="/MyProfile"
           element={
             <ProtectedRoute token={token}>
-              <Profile token={token} currentUser={currentUser} showToast={showToast} />
+              <Profile token={token} currentUser={currentUser} showToast={showToast} onReviewsRefresh={fetchItems} />
             </ProtectedRoute>
           }
         />
@@ -175,7 +176,7 @@ function App() {
 
         <Route
           path="/games/:id"
-          element={<GameDetailsPage token={token} currentUser={currentUser} showToast={showToast} />}
+          element={<GameDetailsPage token={token} currentUser={currentUser} showToast={showToast} onReviewsRefresh={fetchItems} />}
         />
   
         <Route
@@ -197,7 +198,7 @@ function App() {
         />
         <Route
           path="/user/:username"
-          element={<Profile token={token} currentUser={currentUser} showToast={showToast} />}
+          element={<Profile token={token} currentUser={currentUser} showToast={showToast} onReviewsRefresh={fetchItems} />}
         />
         <Route
           path="/users/:username"

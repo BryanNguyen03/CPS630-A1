@@ -1,7 +1,8 @@
 //Component for the main games page, where the games from the API are displayed
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getNormalizedRating, getRatingBadgeClasses } from '../utils/ratingStyles';
+import GameRatingBadge from './GameRatingBadge';
+import { buildReviewStatsByGameId } from '../utils/reviewRatingStats';
 
 function GamesPage({ itemList = [] }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,14 +50,8 @@ function GamesPage({ itemList = [] }) {
   //only render games up to loadedCount (lazy rendering)
   const displayedGames = filteredGames.slice(0, loadedCount);
 
-  // track IGDB IDs of games that have user reviews (show rating badge if it has reviews)
-  const reviewedGameIds = useMemo(() => {
-    return new Set(
-      itemList
-        .map((review) => Number(review.igdbId))
-        .filter((igdbId) => !Number.isNaN(igdbId))
-    );
-  }, [itemList]);
+  // Aggregate user review stats per game so ratings match GameDetailsPage.
+  const reviewStatsByGameId = useMemo(() => buildReviewStatsByGameId(itemList), [itemList]);
 
   //monitoring the intersection observer
   //this runs whenever the loaded amount changes, either by the change in the viewport, search condition, or scrolling past sentinel
@@ -123,8 +118,10 @@ function GamesPage({ itemList = [] }) {
         ) : (
           //render only the games currently loaded (displayedGames only)
           displayedGames.map((item) => {
-            const rating = getNormalizedRating(item.rating / 20);
-            const hasUserReviews = reviewedGameIds.has(Number(item.igdbId)); // show rating if it has reviews
+            // Keep card rating output synchronized with GameDetailsPage averages.
+            const gameReviewStats = reviewStatsByGameId.get(Number(item.igdbId));
+            const averageUserRating = gameReviewStats?.averageRating ?? null;
+            const averageUserRatingDisplay = gameReviewStats?.averageDisplayValue ?? null;
 
             return (
               //Each card here has a link to the game page (GameDetailsPage component) it references
@@ -140,10 +137,12 @@ function GamesPage({ itemList = [] }) {
 
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-lg font-semibold text-text-primary">{item.name}</h3>
-                    {item.rating && hasUserReviews && (
-                      <span className={getRatingBadgeClasses(rating)}>
-                        {rating}/5
-                      </span>
+                    {averageUserRating !== null && (
+                      <GameRatingBadge
+                        rating={averageUserRating}
+                        displayValue={averageUserRatingDisplay}
+                        reviewCount={gameReviewStats.reviewCount}
+                      />
                     )}
                   </div>
 

@@ -1,10 +1,11 @@
 //This component is for seeing indiviudal games, it also allows users to enter their review and see other reviews for the game
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReviewList from './ReviewList';
-import { getNormalizedRating, getRatingBadgeClasses } from '../utils/ratingStyles';
+import GameRatingBadge from './GameRatingBadge';
+import { getAverageRatingFromReviews } from '../utils/reviewRatingStats';
 
-function GameDetailsPage({ token, currentUser, showToast }) {
+function GameDetailsPage({ token, currentUser, showToast, onReviewsRefresh }) {
   const { id } = useParams();
   const [game, setGame] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -121,18 +122,19 @@ function GameDetailsPage({ token, currentUser, showToast }) {
     ? reviews.some(r => r.userName === currentUser.username)
     : false;
 
+  const {
+    averageRating: averageUserRating,
+    reviewCount,
+    averageDisplayValue: averageUserRatingDisplay
+  } = useMemo(() => getAverageRatingFromReviews(reviews), [reviews]);
+  // Uses shared average logic so detail and list pages render matching rating data.
+
   
   //handler function for submitting a review
   const submitReview = async () => {
     //input validation
     if (!newReviewText.trim() || !newRating) {
       const errorMessage = 'Please fill in both the review and rating.';
-      setSubmitError(errorMessage);
-      showToast?.(errorMessage, 'error');
-      return;
-    }
-    if (isNaN(newRating) || newRating < 1 || newRating > 5) {
-      const errorMessage = 'Rating must be between 1 and 5.';
       setSubmitError(errorMessage);
       showToast?.(errorMessage, 'error');
       return;
@@ -161,7 +163,8 @@ function GameDetailsPage({ token, currentUser, showToast }) {
       if (response.ok) {
         setNewReviewText('');
         setNewRating('');
-        await fetchData(); // Refresh reviews
+        // Refresh both local game reviews and app-level review cache for cross-page sync.
+        await Promise.all([fetchData(), onReviewsRefresh?.()]); // Refresh local and app-level review data
         showToast?.('Review added successfully.', 'success');
       } else {
         const data = await response.json().catch(() => ({}));
@@ -219,6 +222,17 @@ function GameDetailsPage({ token, currentUser, showToast }) {
           {game.releaseDate && (
             <p className="text-sm text-text-muted">
               <strong className="text-text-primary">Release Date:</strong> {new Date(game.releaseDate).toLocaleDateString()}
+            </p>
+          )}
+
+          {averageUserRating !== null && (
+            <p className="text-sm text-text-muted">
+              <strong className="text-text-primary">Average Rating:</strong>{' '}
+              <GameRatingBadge
+                rating={averageUserRating}
+                displayValue={averageUserRatingDisplay}
+                reviewCount={reviewCount}
+              />
             </p>
           )}
 
