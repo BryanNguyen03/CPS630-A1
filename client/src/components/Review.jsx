@@ -55,44 +55,48 @@ const Review = ({ review, linkMode = 'none', showUserName = true }) => {
   }, [shouldLinkToGame, review.coverUrl, review.igdbId]);
 
   return (
-    <article className="card space-y-2">
-      {shouldLinkToGame && displayCoverUrl && (
-        <div className="mb-1 flex justify-start">
-          <Link to={`/games/${review.igdbId}`} className="inline-block">
-            <img
-              src={displayCoverUrl}
-              alt={`${gameName} cover`}
-              className="h-28 w-24 rounded-lg object-cover sm:h-32 sm:w-28"
-            />
-          </Link>
-        </div>
-      )}
-
-      <h4 className="text-lg font-semibold">
-        {shouldLinkToGame ? (
-          <Link to={`/games/${review.igdbId}`}>{gameName}</Link>
-        ) : (
-          gameName
+    <article className="card">
+      <div className="flex flex-nowrap items-start gap-4">
+        {shouldLinkToGame && displayCoverUrl && (
+          <div className="shrink-0">
+            <Link to={`/games/${review.igdbId}`} className="inline-block">
+              <img
+                src={displayCoverUrl}
+                alt={`${gameName} cover`}
+                className="h-28 w-24 rounded-lg object-cover sm:h-32 sm:w-28"
+              />
+            </Link>
+          </div>
         )}
-      </h4>
 
-      {showUserName && (
-        <p className="text-sm text-text-muted">
-          <strong className="text-text-primary">User:</strong>{' '}
-          {shouldLinkToProfile ? (
-            <Link to={`/user/${encodeURIComponent(review.userName)}`}>{userName}</Link>
-          ) : (
-            userName
+        <div className="min-w-0 flex-1 space-y-2">
+          <h4 className="text-lg font-semibold">
+            {shouldLinkToGame ? (
+              <Link to={`/games/${review.igdbId}`}>{gameName}</Link>
+            ) : (
+              gameName
+            )}
+          </h4>
+
+          {showUserName && (
+            <p className="text-sm text-text-muted">
+              <strong className="text-text-primary">User:</strong>{' '}
+              {shouldLinkToProfile ? (
+                <Link to={`/user/${encodeURIComponent(review.userName)}`}>{userName}</Link>
+              ) : (
+                userName
+              )}
+            </p>
           )}
-        </p>
-      )}
 
-      <div className="flex items-center gap-2 text-sm text-text-muted">
-        <strong className="text-text-primary">Rating:</strong>
-        <span className={getRatingBadgeClasses(review.rating)}>{review.rating}/5</span>
+          <div className="flex items-center gap-2 text-sm text-text-muted">
+            <strong className="text-text-primary">Rating:</strong>
+            <span className={getRatingBadgeClasses(review.rating)}>{review.rating}/5</span>
+          </div>
+
+          <p className="text-sm leading-6 text-text-muted">{review.review}</p>
+        </div>
       </div>
-
-      <p className="text-sm leading-6 text-text-muted">{review.review}</p>
     </article>
   );
 };
