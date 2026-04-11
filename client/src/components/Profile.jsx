@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Chat from './Chat';
+import ReviewEditModal from './ReviewEditModal';
 import ReviewList from './ReviewList';
-import UpdateReviewSection from './UpdateReviewSection';
 
 const socketServerUrl = 'http://localhost:8080';
 
+// function to safely decode username from URL param
 const decodeUsernameParam = (value) => {
   if (!value) {
     return '';
@@ -18,23 +19,27 @@ const decodeUsernameParam = (value) => {
   }
 };
 
-function Profile({ currentUser, token }) {
+function Profile({ currentUser, token, showToast }) {
   const { username: usernameParam } = useParams();
 
   const [itemList, setItemList] = useState([]);
   const [selectedReviewId, setSelectedReviewId] = useState('');
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
+
+  // state to control visibility of the edit modal for reviews
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 
+  // authentication
   const authToken = token || localStorage.getItem('authToken') || '';
   const authUsername = currentUser?.username || localStorage.getItem('authUsername') || '';
   const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
   const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
   const canManageReviews = Boolean(isOwnProfile && authToken);
-  const showUpdateReviewSection = Boolean(canManageReviews && !isLoadingReviews && itemList.length > 0);
 
+  // Pagination logic -> 4 reviews per page on 'My Profile' page, and 2 reviews when viewing pages on community page
   const RESULTS_PER_PAGE = isOwnProfile ? 4 : 2;
 
   const totalPages = Math.ceil(itemList.length / RESULTS_PER_PAGE);
@@ -42,7 +47,9 @@ function Profile({ currentUser, token }) {
     currentPage * RESULTS_PER_PAGE,
     currentPage * RESULTS_PER_PAGE + RESULTS_PER_PAGE
   );
+  const editingItem = itemList.find((item) => item._id === selectedReviewId) || null;
 
+  // Fetch reviews for the profile being viewed
   const fetchProfileReviews = useCallback(async () => {
     setItemList([]);
 
@@ -74,48 +81,75 @@ function Profile({ currentUser, token }) {
 
   useEffect(() => {
     fetchProfileReviews();
+    setIsEditModalOpen(false);
     setSelectedReviewId('');
     setUpdatedReview('');
     setUpdatedRating('');
   }, [fetchProfileReviews]);
 
+  // functions to handle edit review modal
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedReviewId('');
+    setUpdatedReview('');
+    setUpdatedRating('');
+  };
+
+  const openEditModal = (item) => {
+    setSelectedReviewId(item._id);
+    setUpdatedReview(item.review || '');
+    setUpdatedRating(item.rating ? String(item.rating) : '');
+    setIsEditModalOpen(true);
+  };
+
+  // delete review
   const deleteItem = async (id) => {
+    // Only allow delete if user is logged in and is on their profile
     if (!isOwnProfile || !authToken) {
       return;
     }
 
+    // send delete request to server
     try {
       const response = await fetch(`${socketServerUrl}/api/items/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (response.ok) {
-        fetchProfileReviews();
+        await fetchProfileReviews();
+        showToast?.('Review deleted successfully.', 'success');
       } else {
+        const data = await response.json().catch(() => ({}));
+        // toast error message
+        showToast?.(data.message || 'Failed to delete review. Please try again.', 'error');
         console.error('Error deleting review');
       }
     } catch (error) {
       console.error('Error deleting review:', error);
+      showToast?.('An error occurred while deleting the review.', 'error');
     }
   };
 
+  // Update review
   const updateItem = async () => {
+    // Validate auth and ownership
     if (!isOwnProfile || !authToken) {
       return;
     }
     if (!selectedReviewId) {
-      alert('Please select a review to update');
+      showToast?.('Please select a review to update.', 'error');
       return;
     }
     if (!updatedReview.trim() && !updatedRating) {
-      alert('Please enter at least one field to update');
+      showToast?.('Please enter at least one field to update.', 'error');
       return;
     }
     if (updatedRating && (isNaN(updatedRating) || updatedRating < 1 || updatedRating > 5)) {
-      alert('Rating must be a number between 1 and 5');
+      showToast?.('Rating must be a number between 1 and 5.', 'error');
       return;
     }
 
+    // send patch request to update the review
     try {
       const response = await fetch(`${socketServerUrl}/api/items/review/${selectedReviewId}`, {
         method: 'PATCH',
@@ -133,15 +167,20 @@ function Profile({ currentUser, token }) {
         setUpdatedReview('');
         setUpdatedRating('');
         setSelectedReviewId('');
-        fetchProfileReviews();
+        await fetchProfileReviews();
+        closeEditModal();
+        showToast?.('Review updated successfully.', 'success');
       } else {
-        alert('Failed to update review. Please try again.');
+        const data = await response.json().catch(() => ({}));
+        showToast?.(data.message || 'Failed to update review. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error updating review:', error);
+      showToast?.('An error occurred while updating the review.', 'error');
     }
   };
 
+  // Pagination controls component
   const PaginationControls = () => (
     totalPages > 1 && (
       <div className="flex items-center justify-between pt-2">
@@ -166,6 +205,7 @@ function Profile({ currentUser, token }) {
     )
   );
 
+  // If no username to view (not logged in and no username param), prompt to log in
   if (!viewedUsername) {
     return (
       <div className="page-shell">
@@ -207,15 +247,20 @@ function Profile({ currentUser, token }) {
                 {paginatedItems.map((item) => (
                   <li
                     key={item._id}
-                    className="flex flex-col gap-3 rounded-xl border border-edge bg-bg-800/50 p-3 md:flex-row md:items-center md:justify-between"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-bg-800/50 p-3"
                   >
                     <span className="text-sm text-text-muted">
                       {item.gameName} (ID: {item.igdbId}) | {item.review} | Rating: {item.rating}/5
                     </span>
                     {canManageReviews && (
-                      <button className="btn-danger w-fit" onClick={() => deleteItem(item._id)}>
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button className="btn-secondary w-fit" onClick={() => openEditModal(item)}>
+                          Edit
+                        </button>
+                        <button className="btn-danger w-fit" onClick={() => deleteItem(item._id)}>
+                          Delete
+                        </button>
+                      </div>
                     )}
                   </li>
                 ))}
@@ -235,20 +280,20 @@ function Profile({ currentUser, token }) {
             <PaginationControls />
           </>
         )}
-
-        {showUpdateReviewSection && (
-          <UpdateReviewSection
-            itemList={itemList}
-            selectedReviewId={selectedReviewId}
-            onSelectedReviewIdChange={setSelectedReviewId}
-            updatedReview={updatedReview}
-            onUpdatedReviewChange={setUpdatedReview}
-            updatedRating={updatedRating}
-            onUpdatedRatingChange={setUpdatedRating}
-            onUpdateReview={updateItem}
-          />
-        )}
       </div>
+
+      {canManageReviews && (
+        <ReviewEditModal
+          isOpen={isEditModalOpen}
+          gameName={editingItem?.gameName || ''}
+          updatedReview={updatedReview}
+          onUpdatedReviewChange={setUpdatedReview}
+          updatedRating={updatedRating}
+          onUpdatedRatingChange={setUpdatedRating}
+          onClose={closeEditModal}
+          onUpdateReview={updateItem}
+        />
+      )}
 
       <Chat
         viewedUsername={viewedUsername}

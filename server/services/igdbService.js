@@ -1,5 +1,8 @@
 const Game = require('../models/Game');
 
+// Service functions to interact with IGDB API and cache results in MongoDB
+
+// Fetch Twitch access token
 async function getTwitchAccessToken() {
     const clientId = process.env.IGDB_CLIENT_ID;
     const clientSecret = process.env.IGDB_CLIENT_SECRET;
@@ -16,6 +19,7 @@ async function getTwitchAccessToken() {
     return data.access_token;
 }
 
+// Fetch games from IGDB and cahce in MongoDB if not already cached
 async function fetchAndCacheGames() {
     try {
         const gameCount = await Game.countDocuments();
@@ -55,6 +59,7 @@ async function fetchAndCacheGames() {
 
         const igdbGames = await response.json();
 
+        // Map IGDB game data to our game model format and then insert
         const gamesToInsert = igdbGames.map(game => ({
             igdbId: game.id,
             name: game.name,
@@ -72,6 +77,7 @@ async function fetchAndCacheGames() {
     }
 }
 
+// Fetch a single game by igdbId from IGDB and cache in MongoDB (if not already cached)
 async function fetchAndCacheGameById(igdbId) {
     try {
         const token = await getTwitchAccessToken();
@@ -103,6 +109,7 @@ async function fetchAndCacheGameById(igdbId) {
             return null; // Game not found on IGDB
         }
 
+        // Map IGDB game data to our game model format and insert into mongo
         const game = igdbGames[0];
         const newGame = new Game({
             igdbId: game.id,

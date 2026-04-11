@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 
-const RegisterPage = () => {
+const RegisterPage = ({onRegistrationSuccess, showToast }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleRegister = async () => {
+    if (!username.trim() || !password) {
+      showToast?.('Please enter both username and password.', 'error');
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:8080/api/register', {
         method: 'POST',
@@ -15,12 +20,18 @@ const RegisterPage = () => {
       });
 
       if (response.ok) {
-        alert('Registration successful!');
+        showToast?.('Registration successful! You can now log in.', 'success');
+        setUsername('');
+        setPassword('');
+        //refreshing the userlist to include the new user via parent component function from App
+        onRegistrationSuccess();
       } else {
-        alert('Registration failed. Please try again.');
+        const data = await response.json().catch(() => ({}));
+        showToast?.(data.message || 'Registration failed. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error during registration:', error);
+      showToast?.('An error occurred while registering. Please try again.', 'error');
     }
   };
 

@@ -10,7 +10,7 @@ const ReviewSchema = new mongoose.Schema({
     userName:{       //adding a username field for ease of access when displaying reviews
         type: String,
         required: true,
-        unique: false,  //not unique for reviews
+        unique: false,
         trim: true
     },
     igdbId: {

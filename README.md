@@ -23,7 +23,6 @@ Tailwind CSS v4 was new to most of us. It uses a CSS-first configuration approac
 
 Overall we are proud of what we built. The app ties together authentication, an external API, real-time chat, and a clean UI across React Router, Express, MongoDB, and Socket.io, and we all came away from it with a much stronger understanding of full-stack development.
 
-
 # Documentation
 
 ## Prerequisites
