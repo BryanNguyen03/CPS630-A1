@@ -32,7 +32,7 @@ Overall we are proud of what we built. The app ties together authentication, an 
 
 ## Installation
 
-### 1. Clone the Repository
+### 1. Clone the Repository (if not using provided zip file)
 
 ```bash
 git clone https://github.com/BryanNguyen03/CPS630-A1.git
