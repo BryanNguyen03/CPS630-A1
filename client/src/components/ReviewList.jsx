@@ -1,3 +1,4 @@
+//reviewlist component which renders a list of reviews passed in by the parent component
 import React from 'react';
 import Review from './Review';
 

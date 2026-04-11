@@ -1,9 +1,11 @@
+//component for the registration page, very simmilar to the login page but has differing routes and handler functions
 import React, { useState } from 'react';
 
 const RegisterPage = ({onRegistrationSuccess, showToast }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  //handler function for registration
   const handleRegister = async () => {
     if (!username.trim() || !password) {
       showToast?.('Please enter both username and password.', 'error');
@@ -21,6 +23,7 @@ const RegisterPage = ({onRegistrationSuccess, showToast }) => {
 
       if (response.ok) {
         showToast?.('Registration successful! You can now log in.', 'success');
+        //resetting input feilds
         setUsername('');
         setPassword('');
         //refreshing the userlist to include the new user via parent component function from App

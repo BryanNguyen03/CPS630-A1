@@ -1,4 +1,4 @@
-//Second HTML route for the Review Search by game and by Id, GET requests
+//component for the review search page which allows the user to see all reviews by game search or review id search
 import { useState } from 'react';
 import { getRatingBadgeClasses } from '../utils/ratingStyles';
 
@@ -10,23 +10,29 @@ function ReviewSearchPage({ itemList, onRefresh }) {
   const [itemListSecond, setItemListSecond] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
 
+  //limiting the amount of reviews rendered in the window for search by game
   const RESULTS_PER_PAGE = 4;
 
+  //filtering by gamename
   const gameSearchResults = itemList.filter((item) =>
     item.gameName && item.gameName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  //determining the total amount of window pages based on the amount of reviews given by the search filter
   const totalPages = Math.ceil(gameSearchResults.length / RESULTS_PER_PAGE);
   const paginatedResults = gameSearchResults.slice(
     currentPage * RESULTS_PER_PAGE,
     currentPage * RESULTS_PER_PAGE + RESULTS_PER_PAGE
   );
 
+  //handler function for search
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(0); // Reset to first page on new search
   };
 
+
+  //search by ID fetch request
   const fetchItemsByReviewId = async (id) => {
     setItemListSecond([]);
 
@@ -71,6 +77,7 @@ function ReviewSearchPage({ itemList, onRefresh }) {
           </p>
         ) : (
           <>
+            {/* showing the reviews reslting from the game name search, in a paginated format */}
             <div className="space-y-3">
               {paginatedResults.map((item) => (
                 <article key={item._id} className="card space-y-2">
@@ -86,6 +93,7 @@ function ReviewSearchPage({ itemList, onRefresh }) {
               ))}
             </div>
 
+            {/* controls for the paginated review display */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-2">
                 <button
@@ -111,6 +119,7 @@ function ReviewSearchPage({ itemList, onRefresh }) {
         )}
       </div>
 
+      {/* display for the search review by review ID */}
       <div className="panel space-y-4">
         <div className="space-y-1">
           <h2 className="text-xl">Review Search by ID</h2>

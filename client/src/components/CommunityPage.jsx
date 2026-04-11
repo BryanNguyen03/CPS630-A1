@@ -1,3 +1,4 @@
+//component for the community page, here users can see other users profiles, their reviews, and if logged in they are able to leave messages
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -5,6 +6,7 @@ const CommunityPage = ({ currentUser, users = [] }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
+  //updating the filtered users only if there is a change in the users list, current user selection, or user input search term
   const filteredUsers = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
@@ -19,6 +21,8 @@ const CommunityPage = ({ currentUser, users = [] }) => {
       .sort((a, b) => a.username.localeCompare(b.username));
   }, [users, currentUser?.username, searchTerm]);
 
+
+  //going to the correct user page based on user selection
   const openProfile = (username) => {
     navigate(`/user/${encodeURIComponent(username)}`);
   };

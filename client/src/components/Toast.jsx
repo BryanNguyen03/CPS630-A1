@@ -1,3 +1,4 @@
+//Toast component for showing feedback whenever an event happens instead of an alert
 function Toast({ message, type = 'success', onClose }) {
   if (!message) {
     return null;

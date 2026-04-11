@@ -1,3 +1,4 @@
+//modal component which pops up when a user wants to edit an existing review
 function ReviewEditModal({
   isOpen,
   gameName,

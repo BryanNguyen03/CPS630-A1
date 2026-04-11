@@ -1,3 +1,4 @@
+//component for the user profile page (Shows the profile of the current logged in user)
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Chat from './Chat';

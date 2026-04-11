@@ -1,3 +1,4 @@
+//Component for the main games page, where the games from the API are displayed
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getNormalizedRating, getRatingBadgeClasses } from '../utils/ratingStyles';

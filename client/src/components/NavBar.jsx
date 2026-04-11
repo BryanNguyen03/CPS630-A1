@@ -1,3 +1,4 @@
+//Navbar component
 import { useNavigate, useLocation } from 'react-router-dom'
 
 // Simple navigation bar for the webpage, allows routing to the three pages/views

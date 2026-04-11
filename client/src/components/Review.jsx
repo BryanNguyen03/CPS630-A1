@@ -1,3 +1,4 @@
+//review component, shows the game, user who created it, rating, and review text (Changes accoringly to the parent component)
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getRatingBadgeClasses } from '../utils/ratingStyles';

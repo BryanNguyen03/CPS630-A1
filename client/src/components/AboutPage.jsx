@@ -1,3 +1,4 @@
+//Component for the about page, holds information about the application
 function AboutPage() {
   return (
     <div className="page-shell">
