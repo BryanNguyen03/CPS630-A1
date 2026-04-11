@@ -6,6 +6,7 @@ import ReviewList from './ReviewList';
 
 const socketServerUrl = 'http://localhost:8080';
 
+// function to safely decode username from URL param
 const decodeUsernameParam = (value) => {
   if (!value) {
     return '';
@@ -25,16 +26,20 @@ function Profile({ currentUser, token, showToast }) {
   const [selectedReviewId, setSelectedReviewId] = useState('');
   const [updatedReview, setUpdatedReview] = useState('');
   const [updatedRating, setUpdatedRating] = useState('');
+
+  // state to control visibility of the edit modal for reviews
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 
+  // authentication
   const authToken = token || localStorage.getItem('authToken') || '';
   const authUsername = currentUser?.username || localStorage.getItem('authUsername') || '';
   const viewedUsername = decodeUsernameParam(usernameParam) || authUsername;
   const isOwnProfile = Boolean(authUsername && viewedUsername && authUsername === viewedUsername);
   const canManageReviews = Boolean(isOwnProfile && authToken);
 
+  // Pagination logic -> 4 reviews per page on 'My Profile' page, and 2 reviews when viewing pages on community page
   const RESULTS_PER_PAGE = isOwnProfile ? 4 : 2;
 
   const totalPages = Math.ceil(itemList.length / RESULTS_PER_PAGE);
@@ -44,6 +49,7 @@ function Profile({ currentUser, token, showToast }) {
   );
   const editingItem = itemList.find((item) => item._id === selectedReviewId) || null;
 
+  // Fetch reviews for the profile being viewed
   const fetchProfileReviews = useCallback(async () => {
     setItemList([]);
 
@@ -81,6 +87,7 @@ function Profile({ currentUser, token, showToast }) {
     setUpdatedRating('');
   }, [fetchProfileReviews]);
 
+  // functions to handle edit review modal
   const closeEditModal = () => {
     setIsEditModalOpen(false);
     setSelectedReviewId('');
@@ -95,11 +102,14 @@ function Profile({ currentUser, token, showToast }) {
     setIsEditModalOpen(true);
   };
 
+  // delete review
   const deleteItem = async (id) => {
+    // Only allow delete if user is logged in and is on their profile
     if (!isOwnProfile || !authToken) {
       return;
     }
 
+    // send delete request to server
     try {
       const response = await fetch(`${socketServerUrl}/api/items/${id}`, {
         method: 'DELETE',
@@ -110,6 +120,7 @@ function Profile({ currentUser, token, showToast }) {
         showToast?.('Review deleted successfully.', 'success');
       } else {
         const data = await response.json().catch(() => ({}));
+        // toast error message
         showToast?.(data.message || 'Failed to delete review. Please try again.', 'error');
         console.error('Error deleting review');
       }
@@ -119,7 +130,9 @@ function Profile({ currentUser, token, showToast }) {
     }
   };
 
+  // Update review
   const updateItem = async () => {
+    // Validate auth and ownership
     if (!isOwnProfile || !authToken) {
       return;
     }
@@ -136,6 +149,7 @@ function Profile({ currentUser, token, showToast }) {
       return;
     }
 
+    // send patch request to update the review
     try {
       const response = await fetch(`${socketServerUrl}/api/items/review/${selectedReviewId}`, {
         method: 'PATCH',
@@ -166,6 +180,7 @@ function Profile({ currentUser, token, showToast }) {
     }
   };
 
+  // Pagination controls component
   const PaginationControls = () => (
     totalPages > 1 && (
       <div className="flex items-center justify-between pt-2">
@@ -190,6 +205,7 @@ function Profile({ currentUser, token, showToast }) {
     )
   );
 
+  // If no username to view (not logged in and no username param), prompt to log in
   if (!viewedUsername) {
     return (
       <div className="page-shell">

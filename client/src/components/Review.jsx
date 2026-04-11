@@ -20,6 +20,7 @@ const Review = ({ review, linkMode = 'none', showUserName = true }) => {
   const displayCoverUrl = review.coverUrl || coverUrl;
 
   useEffect(() => {
+    // Only attempt to load cover if we should link to game and don't already have a cover URL
     if (!shouldLinkToGame || review.coverUrl || gameCoverCache.has(review.igdbId)) {
       return;
     }
