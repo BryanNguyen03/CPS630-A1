@@ -13,6 +13,19 @@ This assignment was a great learning experience for us: we connected the MongoDB
 
 We faced some challenges with version control early on in the process, however we were able to quickly streamline our communication and development practices to work effectively. We were able to apply our differing web development skillsets effectively as well as share best practices with one another.
 
+Beyond the core CRUD functionality, we expanded the app into a full-featured video game review platform called ReviewLog. The frontend is a React 19 single-page app built with Vite and styled with Tailwind CSS v4 using a custom dark theme. On the backend, we extended the Express server with JWT-based authentication using bcrypt for password hashing, and added real-time per-profile chat rooms using Socket.io with message history persisted in MongoDB.
+
+We also integrated the IGDB (Internet Game Database) API through Twitch OAuth to fetch real game data like titles, summaries, cover art, and release dates. The games catalog supports search and uses Intersection Observer for lazy loading. Each game has its own detail page where logged-in users can post a review, and we added sort and filter controls so users can browse reviews by rating. On the user side, we built profile pages with full review management (create, update, delete) and a community page for discovering other users.
+
+One thing we were happy with was how we handled the Review component. Instead of building separate review cards for different pages, we added a linkMode prop that controls where the review links to depending on context. On a user profile it links to the game, and on a game page it links to the reviewer's profile. It kept things simple and reusable.
+
+Getting the IGDB integration to play nicely with our seed data was tricky. Both the seed script and the IGDB fetch check whether data already exists before running, so if the seed inserted dummy games first, the IGDB fetch would skip entirely. We had to pay attention to that ordering when testing with fresh databases.
+
+Setting up Socket.io alongside the REST API on the same Express server also took some troubleshooting, especially around CORS configuration to match the Vite dev server. Getting room-based messaging with persistent chat history working reliably required going back and forth between the client and server code a few times.
+
+Tailwind CSS v4 was new to most of us. It uses a CSS-first configuration approach with @theme and @layer directly in the stylesheet instead of the traditional config file, which was cleaner but meant we could not rely on most of the existing tutorials and examples out there. Once we got the hang of it though, it made managing our design tokens and component styles a lot more straightforward.
+
+Overall we are proud of what we built. The app ties together authentication, an external API, real-time chat, and a clean UI across React Router, Express, MongoDB, and Socket.io, and we all came away from it with a much stronger understanding of full-stack development.
 
 # Documentation
 
