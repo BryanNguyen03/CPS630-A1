@@ -1,3 +1,4 @@
+//Component for the login page, handles user login
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,6 +7,7 @@ const LoginPage = ({ onLoginSuccess, showToast }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  //calls the backend api to cross-validate user input with the details stored in the database
   const handleLogin = async () => {
     if (!username.trim() || !password) {
       showToast?.('Please enter both username and password.', 'error');
@@ -21,6 +23,7 @@ const LoginPage = ({ onLoginSuccess, showToast }) => {
         body: JSON.stringify({ username, password }),
       });
 
+      //handling the possible returns either success or failed login
       if (response.ok) {
         const data = await response.json();
         const receivedToken = data.token;
@@ -31,12 +34,14 @@ const LoginPage = ({ onLoginSuccess, showToast }) => {
         const data = await response.json().catch(() => ({}));
         showToast?.(data.message || 'Login failed. Please check your credentials.', 'error');
       }
+    //catching any errors
     } catch (error) {
       console.error('Error during login:', error);
       showToast?.('An error occurred while logging in. Please try again.', 'error');
     }
   };
 
+  //simple user input for login
   return (
     <div className="page-shell mx-auto max-w-lg">
       <h2 className="page-title">Login</h2>
