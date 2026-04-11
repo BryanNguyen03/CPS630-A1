@@ -146,6 +146,12 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
     setNewMessage('');
   };
 
+  // for the form, when pressing enter or send button
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    sendMessage();
+  };
+
 
   //displaying appropirately if no user selected 
   if (!viewedUsername) {
@@ -196,8 +202,9 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
           ))
         )}
       </div>
-      {/* input field for the user to enter new messages */}
-      <div className="flex flex-col gap-2 md:flex-row">
+      {/* form for sending messages with enter key */}
+      <form className="flex flex-col gap-2 md:flex-row" onSubmit={handleSubmit}>
+        {/* input field for the user to enter new messages */}
         <input
           type="text"
           className="input-field"
@@ -206,10 +213,10 @@ function Chat({ viewedUsername, authUsername, authToken, isOwnProfile = false })
           placeholder={canSendMessages ? 'Type a message...' : 'Log in to start chatting'}
           disabled={!canSendMessages}
         />
-        <button className="btn-primary md:w-auto" onClick={sendMessage} disabled={!canSendMessages || !newMessage.trim()}>
+        <button type="submit" className="btn-primary md:w-auto" disabled={!canSendMessages || !newMessage.trim()}>
           Send
         </button>
-      </div>
+      </form>
 
       {!canSendMessages && (
         <p className="text-sm text-text-muted">
